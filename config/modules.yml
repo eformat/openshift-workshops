@@ -85,3 +85,7 @@ run-as-non-root:
   name: Running a container as a non Root user
 gcp-bigquery:
   name: Integrating with Google Compute Service BigQuery
+pipelines-advanced:
+  name: Advanced Deployment with CI/CD Pipelines
+  requires:
+#    - application-health

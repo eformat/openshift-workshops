@@ -1,0 +1,13 @@
+name: Container Camp AU 2017
+logo: cc-au-hero-426a54ac.svg
+vars:
+  DOWNLOAD_CLIENT_WINDOWS: "https://drive.google.com/open?id=0BzSBX7yS9LvaOTIyX0tOQUljVXc"
+  DOWNLOAD_CLIENT_MAC: "https://drive.google.com/open?id=0BzSBX7yS9LvaeVdJT1ZGSDJDX2s"
+  DOWNLOAD_CLIENT_LIN32: ""
+  DOWNLOAD_CLIENT_LIN64: "https://drive.google.com/open?id=0BzSBX7yS9LvaaXI1MmRCQjY5cTg"
+modules:
+  activate:
+    - install
+    - pipelines-advanced
+  revisions:
+    install: ocp
