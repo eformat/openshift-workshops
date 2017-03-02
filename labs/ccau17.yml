@@ -5,6 +5,10 @@ vars:
   DOWNLOAD_CLIENT_MAC: "https://drive.google.com/open?id=0BzSBX7yS9LvaeVdJT1ZGSDJDX2s"
   DOWNLOAD_CLIENT_LIN32: ""
   DOWNLOAD_CLIENT_LIN64: "https://drive.google.com/open?id=0BzSBX7yS9LvaaXI1MmRCQjY5cTg"
+  CONSOLE_ADDRESS: 192.168.137.3:8443
+  ROUTER_ADDRESS: "192.168.137.3.xip.io"
+  USER_NAME: "developer"
+  USER_PASSWORD: "developer"
 modules:
   activate:
     - install
