@@ -8,6 +8,7 @@ vars:
 modules:
   activate:
     - install
+    - explore
     - pipelines-advanced
     - configuration-advanced
   revisions:
