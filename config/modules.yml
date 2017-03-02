@@ -86,6 +86,8 @@ run-as-non-root:
 gcp-bigquery:
   name: Integrating with Google Compute Service BigQuery
 pipelines-advanced:
-  name: Advanced Deployment with CI/CD Pipelines
+  name: Deployment with CI/CD Pipelines
   requires:
 #    - application-health
+configuration-advanced:
+  name: Application Configuration; Zero Downtime Deployments

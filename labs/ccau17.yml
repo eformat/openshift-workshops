@@ -9,5 +9,6 @@ modules:
   activate:
     - install
     - pipelines-advanced
+    - configuration-advanced
   revisions:
     install: ocp

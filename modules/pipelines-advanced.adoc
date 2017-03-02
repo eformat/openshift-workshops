@@ -56,15 +56,15 @@ The OpenShift cluster should be configured to automatically provision Jenkins by
         templateNamespace: openshift
 ----
 
-The source code for these jenkins images is in [github](https://github.com/openshift/jenkins) and examples of its use
-can be found [here](https://github.com/openshift/origin/tree/master/examples/jenkins) and [here](https://github.com/openshift/jenkins-plugin)
+The source code for these jenkins images is in github - https://github.com/openshift/jenkins and examples of its use
+can be found here - https://github.com/openshift/origin/tree/master/examples/jenkins and here - https://github.com/openshift/jenkins-plugin
 for the jenkins kubernetes plugin.
 
 ### A Simple Pipeline
 
 Create a project named "samplepipeline-username"
 
-*Remember* to substitute the username with your own id.
+`Remember` to substitute the username with your own id.
 
 [source]
 ----
@@ -103,10 +103,13 @@ oc get pods
 NAME                             READY     STATUS      RESTARTS   AGE
 jenkins-1-11fa6                  1/1       Running     0          9m
 mongodb-1-g84t4                  1/1       Running     0          9m
-nodejs-2fc075ffd1b7              1/1       Running     0          2m    <- node pod
-nodejs-mongodb-example-1-build   0/1       Completed   0          1m    <- build pod
-nodejs-mongodb-example-1-tfh02   1/1       Running     0          13s   <- running application
+nodejs-2fc075ffd1b7              1/1       Running     0          2m    <1>
+nodejs-mongodb-example-1-build   0/1       Completed   0          1m    <2>
+nodejs-mongodb-example-1-tfh02   1/1       Running     0          13s   <3>
 ----
+<1> Node Pod
+<2> Build Pod
+<3> Running Application
 
 If you browse to the running applicaiton URL, you can see a simple page count that increments on every visit and is stored in the mongodb.
 
@@ -144,7 +147,7 @@ image::/images/15-blue-green-deployments.png[Blue Green Deployments,800,align="c
 
 Let's create a new project:
 
-*Remember* to substitute the username with your own id.
+`Remember` to substitute the username with your own id.
 
 [source]
 ----
@@ -269,7 +272,7 @@ image::/images/15-ab-adjust-routes.png[Adjust the routes,800,align="center"]
 
 We can test that 80% of traffic is going to our 'A' (blue) version, and 20% is going to our 'B' (green) version:
 
-*Remember* to substitute the username and hostname with your own id and environment URL:
+`Remember` to substitute the username and hostname with your own id and environment URL:
 
 [source]
 ----
@@ -317,7 +320,7 @@ image::/images/15-multi-project-pipeline.png[Multi project pipeline,800,align="c
 
 We are going to setup four projects for our pipeline activities:
 
-*Remember* to substitute the username with your own id
+`Remember` to substitute the username with your own id
 
 * cicd-username - containing our Jenkins instance
 * development-username - for building and developing our application images 
@@ -371,7 +374,7 @@ oc create -n cicd-username -f https://raw.githubusercontent.com/eformat/pipeline
 
 Lets create our development application using Source to Image.
 
-*Remember* to substitute the username with your own id and hostname with the correct hostname for your environment:
+`Remember` to substitute the username with your own id and hostname with the correct hostname for your environment:
 
 [source]
 ----
@@ -382,7 +385,7 @@ oc expose service myapp --hostname=cotd-development-username.192.168.137.3.xip.i
 
 Lets setup our testing project, using the image from development and changing the image pull policy to always.
 
-*Remember* to substitute the username with your own id and hostname with the correct hostname for your environment and Be sure to use your own
+`Remember` to substitute the username with your own id and hostname with the correct hostname for your environment and Be sure to use your own
 environment registry ip address (from 'oc get is')
 
 [source]

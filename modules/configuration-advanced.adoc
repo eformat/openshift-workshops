@@ -1,0 +1,385 @@
+## Lab: Zero Downtime Deployment; Externalizing Application Configuration; Hot Reconfiguration; Application Performance Managment
+
+### Background: 
+Once you build your applications, you can guarantee that you will need to change them ! Requihawkular-nts change, system functionality
+evolves, defects need to be fixed.
+
+We want to ensure that frequent deployments do not impact the availability of our services. And this is where the Zero Downtime Deployment
+(ZDD) comes in. This allows you to deploy a new version of your service without interrupting the operation of the service.
+
+Most applications require configuration using environment variables, configuration files and command line arguments. These configuration artifacts
+should be externalized form the application and the immutable image content in order to keep the image portable across our environments.
+
+In this lab we are going to learn about using Openshift to deploy a REST web service and demonstrate various configuration aspects to achieve ZDD.
+We'll also demonstrate hot reconfiguration capabilites and application performance managment along the way.
+
+The application stack consists of support RedHat tools from open source projects including
+
+- Java - http://openjdk.java.net/
+- Camel - http://camel.apache.org/
+- SpringBoot - https://projects.spring.io/spring-boot/
+- Fabric8 - https://fabric8.io/
+- Hawkular APM - http://www.hawkular.org/hawkular-apm/
+
+### Prerequisites
+
+`The pre-reqs have already been done for this lab` 
+
+Let's run through the setup ...
+
+##### Nexus
+
+We are going to be building and deploying a Java application. We have deployed a nexus container with a persistent volume claim to cache the
+ maven dependencies required to build the example application. This speeds up our builds as well as saving bandwidth.
+
+[source]
+---- 
+oc new-project nexus --display-name="Nexus" --description="Nexus"
+oc project nexus
+oc new-app -f https://raw.githubusercontent.com/eformat/openshift-nexus/master/nexus.yaml
+----
+
+Once the nexus pod has deployed we install the following maven proxy repositories as the *admin/admin123* user:
+
+[options="header"]
+|=======
+| Repo Name | URL | Type
+| jboss-ga | http://maven.repository.redhat.com/techpreview/all | Release
+| fusesource.m2 | https://repo.fusesource.com/nexus/content/groups/public | Release
+| repository.jboss.org | http://repository.jboss.org/nexus/content/groups/public | Mixed
+| fusesource.ea | https://repo.fusesource.com/nexus/content/groups/ea | Release
+| redhat.ga | https://maven.repository.redhat.com/ga | Release
+|=======
+
+image::/images/28-nexus-repos.png[Nexus Repository Manager,800,align="center"]
+
+The example application source code contains an override maven settings file that points to this nexus repo. The Source To Image (S2I) java
+builder will use this file:
+
+[source]
+---- 
+https://github.com/eformat/camel-springboot-rest-ose/blob/master/configuration/settings.xml
+----
+
+##### Java S2I Image
+
+We are going to leverage the Red Hat Java S2I builder image for building and running fat-jar and flat classpath apps
+
+[source]
+---- 
+oc import-image -n openshift registry.access.redhat.com/redhat-openjdk-18/openjdk18-openshift --confirm --all
+----
+
+If you are a Red Hat customer, the container catalogue gives you details on this image:
+
+image::/images/28-redhat-image-catalog.png[Red Hat Container Catalogue,800,align="center"]
+
+A community based equivalent image is `docker.io/fabric8/java-jboss-openjdk8-jdk`
+
+##### Hawkular APM Agent
+
+We are going to leverage Hawkular Application Performance Managment later in the lab. So, we have layered ontop of the base S2I Java image
+the Hawkular agent using a *Dockerfile*
+
+* https://github.com/eformat/hawkular-apm-template/blob/master/Dockerfile
+
+The image has been built and deployed into the shared openshift namespace:
+
+[source]
+---- 
+git clone git@github.com:eformat/hawkular-apm-template.git
+cd ~/git/hawkular-apm-template
+oc login -u admin -p admin
+oc project openshift
+oc new-build --binary --name=spring-boot-apm
+oc start-build spring-boot-apm --from-dir=. --follow
+----
+
+We have created an application template that uses the spring-boot-apm image and loaded it into Openshift:
+
+[source]
+---- 
+oc create -f https://raw.githubusercontent.com/eformat/hawkular-apm-template/master/templates/spring-boot-apm-template.json -n openshift
+----
+
+We have also loaded the Hawkular APM server template and loaded it into OpenShift:
+
+[source]
+---- 
+oc create -f https://raw.githubusercontent.com/eformat/hawkular-apm-template/master/templates/hawkular-apm-server.yml
+----
+
+##### Reference Links
+* https://hawkular.gitbooks.io
+* https://github.com/jboss-dockerfiles/hawkular-apm/tree/master/openshift-templates
+
+
+### Now you get your hands dirty, build and deploy the application
+
+`Remember` to substitute the username with your own id.
+
+Login and create a project for our SpringBoot application:
+
+[source]
+---- 
+oc new-project helloservice-username --display-name="Helloservice" --description="Helloservice"
+----
+
+We are going to allow our default service account to *view* the kubernetes api (this is for our spring hot reload function later on)
+
+[source]
+---- 
+oc policy add-role-to-user view --serviceaccount=default -n $(oc project -q)
+----
+
+Build and deploy the application using the *spring-boot-apm* template and S2I image we built and loaded in the Prerequisites 
+
+[source]
+----
+oc new-app --template=spring-boot-apm -p SOURCE_REPOSITORY_URL="https://github.com/eformat/camel-springboot-rest-ose.git",APPLICATION_NAME=camel-springboot-rest
+
+--> Deploying template "spring-boot-apm" in project "openshift"
+
+     spring-boot-apm
+     ---------
+     Application template for Spring Boot applications built using S2I and supporting Hawkular APM.
+
+     * With parameters:
+        * APPLICATION_NAME=camel-springboot-rest
+        * HOSTNAME_HTTP=
+        * SOURCE_REPOSITORY_URL=https://github.com/eformat/camel-springboot-rest-ose.git
+        * SOURCE_REPOSITORY_REF=master
+        * CONTEXT_DIR=/
+        * GITHUB_WEBHOOK_SECRET=VvXDC1LY # generated
+        * GENERIC_WEBHOOK_SECRET=omW14ntS # generated
+        * IMAGE_STREAM_NAMESPACE=openshift
+
+--> Creating resources with label app=spring-boot-apm ...
+    service "camel-springboot-rest" created
+    route "camel-springboot-rest" created
+    imagestream "camel-springboot-rest" created
+    buildconfig "camel-springboot-rest" created
+    deploymentconfig "camel-springboot-rest" created
+--> Success
+    Build scheduled, use 'oc logs -f bc/camel-springboot-rest' to track its progress.
+    Run 'oc status' to view your app.
+----
+
+A build should start and the java dependencies will be pulled from the Nexus server.
+
+*(Optional)*
+For the developers who want to build the application locally:
+
+[source]
+----
+git clone git@github.com:eformat/camel-springboot-rest-ose.git
+cd camel-springboot-rest-ose
+mvn spring-boot:run
+----
+
+Once the image has been built and deployed to the registry, a single pod should be running. We can see a warning about Health Checks which we are going
+to deal with in a minute.
+
+image::/images/28-springboot-apm-pod.png[SpringBoot APM Pod,700,align="center"]
+
+### Configuring application behaviour
+
+##### Application properties files
+
+If we browse to our application, we should see that a Swagger-UI - http://swagger.io/ has been deployed to the root of our application.
+
+There is an bug with our generated swagger documentation - it does not know what our exposed route URL is. As a workaround we set an environment
+ variable to point to our exposed application for the swagger documentation:
+
+[source]
+----
+oc env dc/camel-springboot-rest SWAGGERUI_HOST=$(oc get route camel-springboot-rest --template='{{ .spec.host }}')
+----
+
+If we try out our Helloservice in the swagger-ui, it should return a Response
+
+[source,role=copypaste]
+----
+"Default Prop Hi mike ! from pod: camel-springboot-rest-2-wt91a"
+----
+
+image::/images/28-swagger-reposnse.png[Swagger Helloservice,800,align="center"]
+
+The `Default Prop Hi` greeting is set in the spring application properties file
+
+* https://github.com/eformat/camel-springboot-rest-ose/blob/master/src/main/resources/application.properties#L29
+
+
+image::/images/28-spring-properties.png[Spring Properties File,600,align="center"]
+
+This is bound into the application using the spring @ConfigurationProperties annotaion
+
+* https://github.com/eformat/camel-springboot-rest-ose/blob/master/src/main/java/org/example/ApplicationConfigBean.java#L7
+
+image::/images/28-spring-properties-annotation.png[Spring Configuration,600,align="center"]
+
+##### Environment variables, Deployment strategies
+
+Lets change the Greeting message using an environment variable:
+
+[source]
+----
+oc env dc/camel-springboot-rest GREETING="Environment Variable Hi "
+----
+
+By changing the deployment configuration, we will trigger a new deployment. If we browse to our application you might see an HTTP 503, this
+is because the jvm and our application is in the process of restarting:
+
+image::/images/28-spring-503.png[HTTP 503 Unavailable,400,align="center"]
+
+The default deployment strategy in OpenShift is the `Rolling` strategy. The rolling strategy performs a rolling update of our application. OpenShift offers *health checks*
+ when deploying our applicaiton that tell us when the applicaiton is alive - *liveness* and ready to accept user requests - *readiness*.
+
+It is crucial for correct deployment behaviour that we set them appropriately for our application. We can do this from the command line or web-ui. Lets define a
+liveness check for our container that performs a simple shell command (echo), and a readiness check on our API using the spring actuator */health* status that is built in:
+
+[source]
+----
+oc set probe dc/camel-springboot-rest --liveness -- echo ok
+oc set probe dc/camel-springboot-rest --readiness --get-url=//:8080/health --initial-delay-seconds=60 --timeout-seconds=2
+----
+
+image::/images/28-spring-health-check.png[Spring Health Check,600,align="center"]
+
+If we watch the deployment in the web-ui - we can see that the old pod is not stopped and removed until the new pod deployment has successfully passed
+ our defined liveness and readiness health check probes.
+
+image::/images/28-rolling-deployment.png[Rolling Deployment Strategy,600,align="center"]
+
+Now, once deployment has finished, lets try testing our environment variable configured service in swagger
+
+image::/images/28-env-var-service.png[Enviornment Variable Helloservice,800,align="center"]
+
+Yes - it returns the environment variable version of our greeting.
+
+How did we acheive this? by using setting a preference in our Java code to return an environment variable (as exposed in our container runtime) over the property file:
+
+* https://github.com/eformat/camel-springboot-rest-ose/blob/master/src/main/java/org/example/ApplicationConfigBean.java#L17
+
+image::/images/28-env-var-code.png[Enviornment Variable Code,600,align="center"]
+
+##### Config Maps, Hot Reload
+
+The `ConfigMap` object in OpenShift provides mechanisms to provide configuration data to the application container while keeping the application images both
+portable across environments and independent of OpenShift Container Platform. A `ConfigMap` can be used to store key-value properties, configuration files, JSON
+blobs and alike.
+
+Lets remove our GREETING environment variable we set previously:
+
+[source]
+----
+oc env dc/camel-springboot-rest GREETING-
+----
+
+And use a ConfigMap to configure our application instead (if you are not using bash shell, it may be easier to copy the yaml into a file instead to create the ConfigMap)
+
+[source]
+----
+oc create -f - <<EOF
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: helloservice
+data:
+  application.yaml: |-
+    helloservice:
+      greeting: ConfigMap Hello 
+EOF
+----
+
+Now when we test our API, we should see this greeting
+
+image::/images/28-config-map-service.png[ConfigMap Helloservice,600,align="center"]
+
+Our config map greeting has been loaded into out application. If we examine the logs, we can see that a pod/container restart `did not` occur?
+
+Looking at the application logs, we can see what has happened:
+
+image::/images/28-config-map-hotreload.png[Spring Cloud Kubernetes,1200,align="center"]
+
+The application has reloaded the Spring Context (without restarting the JVM) when we changed the ConfigMap
+
+We are making use of `Spring Cloud Kubernetes` - https://github.com/fabric8io/spring-cloud-kubernetes to discover when changes occur to our project
+
+image::/images/28-spring-cloud-kubernetes.png[Spring Cloud Kubernetes,1200,align="center"]
+
+We can `Hot Reload` the config map
+
+[source]
+----
+oc replace -f - <<EOF
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: helloservice
+data:
+  application.yaml: |-
+    helloservice:
+      greeting: hot hot hot  
+EOF
+----
+
+image::/images/28-hot-reload.png[Hot Reload,600,align="center"]
+
+### Application Performance Managment
+
+Lets deploy a Hawkular APM server to our project using a template
+
+[source]
+----
+oc create -f https://raw.githubusercontent.com/eformat/hawkular-apm-template/master/templates/hawkular-apm-server-deployment.yml
+----
+
+Once the hawkular apm, and elasticsearch images have been deployed and started, you can login to the Hawkular APM Console using 
+`admin / password` as the credentials. There won't be any data yet.
+
+We need to set some environment variable on our java application to start instrumenting our app using APM:
+
+[options="header"]
+|=======
+| Environment Variable | Description
+| HAWKULAR_APM_URI | the HTTP URI for accessing your hawkular server (make sure to not use the HTTPS URL, I did not manage to got it working for now),
+| HAWKULAR_APM_USERNAME | the username for connecting APM server, use default `admin` user
+| HAWKULAR_APM_PASSWORD | the password for connecting APM server, use default admin `password`
+| JAVA_OPTIONS | the JVM options for enabling Java agent, use -javaagent:/libs/hawkular-apm-agent.jar=boot:/libs/hawkular-apm-agent.jar that refers to the Hawkular agent previously added to image libs.
+|=======
+
+Lets set these on the deployment config
+
+[source]
+----
+oc env dc/camel-springboot-rest HAWKULAR_APM_URI=$(oc get route hawkular-apm --template='http://{{ .spec.host }}') \
+                                HAWKULAR_APM_USERNAME=admin \
+                                HAWKULAR_APM_PASSWORD=password \
+                                JAVA_OPTIONS=-javaagent:/libs/hawkular-apm-agent.jar=boot:/libs/hawkular-apm-agent.jar
+----
+
+Once re-deployed, we can test our application using the swagger-ui again and we should start seeing traffic in the Hawkular APM console
+
+We can filter by time spanand text, and look the time taken for each call and drilldown into distributed tracing and latency for each rest call.
+
+image::/images/28-hawkular-apm-component.png[APM Component View,1000,align="center"]
+
+We did not have to annotate or modify our code - it works out of the box using the OpenTracing standard - a vendor-neutral open standard for distributed tracing.
+
+image::/images/28-hawkular-apm-drilldown.png[APM Transaction Drilldown,1000,align="center"]
+
+##### Hawt.io
+
+The base Java image also support the hawt.io console (exposes JMX over REST). You can open the java console
+
+image::/images/28-open-java-console.png[Open Java Console,600,align="center"]
+
+to see your Camel Routes in real-time, drilldown into the source code, debug and trace in realtime your camel application
+
+image::/images/28-hawtio-camel-route.png[Hawt.io Camel Routes,1000,align="center"]
+
+as well as see summary aatributes
+
+image::/images/28-camel-messages.png[Camel Route Attributes,1000,align="center"]
+
