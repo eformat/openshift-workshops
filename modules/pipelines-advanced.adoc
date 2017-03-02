@@ -113,7 +113,7 @@ nodejs-mongodb-example-1-tfh02   1/1       Running     0          13s   <3>
 
 If you browse to the running applicaiton URL, you can see a simple page count that increments on every visit and is stored in the mongodb.
 
-image::/images/15-simple-jenkins-running-application.png[The running application,800,align="center"]
+image::/images/15-simple-jenkins-running-application.png[The running application,400,align="center"]
 
 *(Optional) Accessing the Database*
 
@@ -264,11 +264,11 @@ oc create -f https://raw.githubusercontent.com/eformat/bluegreen/master/ab-pipel
 oc start-build ab-pipeline
 ----
 
-image::/images/15-ab-pipeline.png[A/B Deployment pipeline,800,align="center"]
+image::/images/15-ab-pipeline.png[A/B Deployment pipeline,400,align="center"]
 
 If we set the weights for our services:
 
-image::/images/15-ab-adjust-routes.png[Adjust the routes,800,align="center"]
+image::/images/15-ab-adjust-routes.png[Adjust the routes,400,align="center"]
 
 We can test that 80% of traffic is going to our 'A' (blue) version, and 20% is going to our 'B' (green) version:
 
@@ -308,7 +308,7 @@ for x in {1..10}; do curl -c /tmp/cookie -b /tmp/cookie -s http://bluegreen-blue
 10 blue
 ----
 
-image::/images/15-ab-weights.png[Route weighting,800,align="center"]
+image::/images/15-ab-weights.png[Route weighting,1000,align="center"]
 
 ### Multi Project Pipeline
 
@@ -423,7 +423,7 @@ oc start-build pipeline -n cicd-username
 
 The first step will log you in to Jennkins via OAuth and query you for your project paramterised username
 
-image::/images/15-username-pipelines.png[Project Username Parameter,800,align="center"]
+image::/images/15-username-pipelines.png[Project Username Parameter,400,align="center"]
 
 Once the image is built and deployed in development, it is tagged 'promoteQA' and deployed into the testing project.
 
