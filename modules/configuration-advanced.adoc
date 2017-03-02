@@ -25,7 +25,7 @@ The application stack consists of support RedHat tools from open source projects
 
 `The pre-reqs have already been done for this lab` 
 
-Let's run through the setup ...
+Let's run through the setup so you can repeat in other environments...
 
 ##### Nexus
 

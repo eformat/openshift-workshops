@@ -13,7 +13,9 @@ The multi-project example will focus on the build / tag / promote lifecycle usin
 
 ### Prerequisites
 
-Your environment should be set up with these artifacts, but if not heres how to manually load them.
+`The pre-reqs have already been done for this lab` 
+
+Let's run through the setup so you can repeat in other environments...
 
 We will be using Jenkins image streams in our OpenShift environment:
 
