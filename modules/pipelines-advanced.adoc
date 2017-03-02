@@ -278,7 +278,7 @@ We can test that 80% of traffic is going to our 'A' (blue) version, and 20% is g
 
 [source]
 ----
-for x in {1..10}; do curl -s http://bluegreen-bluegreen-username.192.168.137.3.xip.io/ | grep -q blue && echo $x blue || echo $x green; done
+for x in {1..10}; do curl -s http://bluegreen-bluegreen-username.{{ROUTER_ADDRESS}}/ | grep -q blue && echo $x blue || echo $x green; done
 
 1 blue
 2 blue
@@ -296,7 +296,7 @@ Beacuase the default configuraiton for HAProxy is to honour sticky sessions usin
 
 [source]
 ----
-for x in {1..10}; do curl -c /tmp/cookie -b /tmp/cookie -s http://bluegreen-bluegreen-username.192.168.137.3.xip.io | grep -q blue && echo $x blue || echo $x green; done
+for x in {1..10}; do curl -c /tmp/cookie -b /tmp/cookie -s http://bluegreen-bluegreen-username.{{ROUTER_ADDRESS}} | grep -q blue && echo $x blue || echo $x green; done
 
 1 blue
 2 blue
@@ -382,7 +382,7 @@ Lets create our development application using Source to Image.
 ----
 oc project development-username
 oc new-app openshift/php:5.6~https://github.com/devops-with-openshift/cotd.git#master --name=myapp
-oc expose service myapp --hostname=cotd-development-username.192.168.137.3.xip.io --name=myapp
+oc expose service myapp --hostname=cotd-development-username.{{ROUTER_ADDRESS}} --name=myapp
 ----
 
 Lets setup our testing project, using the image from development and changing the image pull policy to always.
@@ -398,7 +398,7 @@ oc deploy myapp --cancel
 oc patch dc/myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}'
 oc deploy myapp --cancel -n testing-username
 oc expose dc myapp --port=8080
-oc expose service myapp --hostname=cotd-testing-username.192.168.137.3.xip.io --name=myapp
+oc expose service myapp --hostname=cotd-testing-username.{{ROUTER_ADDRESS}} --name=myapp
 ----
 
 We are using the arbitrary :promoteQA image tag for the testing deployment (which doesn't yet exist)
@@ -413,7 +413,7 @@ oc deploy myapp --cancel
 oc patch dc/myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}'
 oc deploy myapp --cancel
 oc expose dc myapp --port=8080
-oc expose service myapp --hostname=cotd-production-username.192.168.137.3.xip.io --name=myapp
+oc expose service myapp --hostname=cotd-production-username.{{ROUTER_ADDRESS}} --name=myapp
 ----
 
 Now we are ready to run our pipeline deployment from the cicd-username project.
