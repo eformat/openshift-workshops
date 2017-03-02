@@ -41,7 +41,7 @@ Load the sample application template as well:
 
 [source]
 ----
-oc create -f https://raw.githubusercontent.com/openshift/origin/master/examples/jenkins/pipeline/samplepipeline.json -n openshift
+oc create -f https://raw.githubusercontent.com/openshift/origin/master/examples/jenkins/pipeline/samplepipeline.yaml -n openshift
 ----
 
 The OpenShift cluster should be configured to automatically provision Jenkins by setting the following cluster wide configuration in "master-config.yaml"
