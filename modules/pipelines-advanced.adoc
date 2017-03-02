@@ -354,7 +354,7 @@ oc policy add-role-to-group system:image-puller system:serviceaccounts:testing-u
 oc policy add-role-to-group system:image-puller system:serviceaccounts:production-username -n development-username
 ----
 
-Your shuold now have these projects:
+Your should now have these projects:
 
 image::/images/15-multi-projects.png[Multiple projects,800,align="center"]
 
