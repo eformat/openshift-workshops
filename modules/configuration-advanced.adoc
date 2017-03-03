@@ -349,13 +349,14 @@ We need to set some environment variable on our java application to start instru
 
 Lets set these on the deployment config
 
-[source]
-----
-oc env dc/camel-springboot-rest HAWKULAR_APM_URI=$(oc get route hawkular-apm --template='http://{{ .spec.host }}') \
+++++
+<pre class="highlight">
+<code>oc env dc/camel-springboot-rest HAWKULAR_APM_URI=$(oc get route hawkular-apm --template='http://&#123;{ .spec.host }}') \
                                 HAWKULAR_APM_USERNAME=admin \
                                 HAWKULAR_APM_PASSWORD=password \
-                                JAVA_OPTIONS=-javaagent:/libs/hawkular-apm-agent.jar=boot:/libs/hawkular-apm-agent.jar
-----
+                                JAVA_OPTIONS=-javaagent:/libs/hawkular-apm-agent.jar=boot:/libs/hawkular-apm-agent.jar</code>
+</pre>
+++++
 
 Once re-deployed, we can test our application using the swagger-ui again and we should start seeing traffic in the Hawkular APM console
 
