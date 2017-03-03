@@ -188,10 +188,11 @@ If we browse to our application, we should see that a Swagger-UI - http://swagge
 There is an bug with our generated swagger documentation - it does not know what our exposed route URL is. As a workaround we set an environment
  variable to point to our exposed application for the swagger documentation:
 
-[source]
-----
-oc env dc/camel-springboot-rest SWAGGERUI_HOST=$(oc get route camel-springboot-rest --template='{{ .spec.host }}')
-----
+++++
+<pre class="highlight">
+<code>oc env dc/camel-springboot-rest SWAGGERUI_HOST=$(oc get route camel-springboot-rest --template='&#123;{ .spec.host }}')</code>
+</pre>
+++++
 
 If we try out our Helloservice in the swagger-ui, it should return a Response
 
