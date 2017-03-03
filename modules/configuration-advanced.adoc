@@ -13,7 +13,7 @@ should be externalized form the application and the immutable image content in o
 In this lab we are going to learn about using Openshift to deploy a REST web service and demonstrate various configuration aspects to achieve ZDD.
 We'll also demonstrate hot reconfiguration capabilites and application performance managment along the way.
 
-The application stack consists of support RedHat tools from open source projects including
+The application stack consists of supported RedHat tools from open source projects including
 
 - Java - http://openjdk.java.net/
 - Camel - http://camel.apache.org/
@@ -56,10 +56,7 @@ image::/images/28-nexus-repos.png[Nexus Repository Manager,800,align="center"]
 The example application source code contains an override maven settings file that points to this nexus repo. The Source To Image (S2I) java
 builder will use this file:
 
-[source]
----- 
-https://github.com/eformat/camel-springboot-rest-ose/blob/master/configuration/settings.xml
-----
+* https://github.com/eformat/camel-springboot-rest-ose/blob/master/configuration/settings.xml
 
 ##### Java S2I Image
 
@@ -87,8 +84,8 @@ The image has been built and deployed into the shared openshift namespace:
 
 [source]
 ---- 
-git clone git@github.com:eformat/hawkular-apm-template.git
-cd ~/git/hawkular-apm-template
+git clone https://github.com/eformat/hawkular-apm-template
+cd hawkular-apm-template
 oc login -u admin -p admin
 oc project openshift
 oc new-build --binary --name=spring-boot-apm
@@ -172,7 +169,7 @@ For the developers who want to build the application locally:
 
 [source]
 ----
-git clone git@github.com:eformat/camel-springboot-rest-ose.git
+git clone https://github.com/eformat/camel-springboot-rest-ose
 cd camel-springboot-rest-ose
 mvn spring-boot:run
 ----
