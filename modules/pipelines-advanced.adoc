@@ -385,15 +385,22 @@ oc new-app openshift/php:5.6~https://github.com/devops-with-openshift/cotd.git#m
 oc expose service myapp --hostname=cotd-development-username.{{ROUTER_ADDRESS}} --name=myapp
 ----
 
-Lets setup our testing project, using the image from development and changing the image pull policy to always.
+`Remember` to substitute the username with your own id and hostname with the correct hostname for your environment
 
-`Remember` to substitute the username with your own id and hostname with the correct hostname for your environment and Be sure to use your own
-environment registry ip address (from 'oc get is')
+`Be sure to use your own environment registry ip and image streams from`
+
+[source]
+----
+oc get is -n development-user01
+oc get is -n development-user01 --template='{{range .items}}{{.status.dockerImageRepository}}{{end}}'
+----
+
+Lets setup our testing project, using the image from development and changing the image pull policy to always.
 
 [source]
 ----
 oc project testing-username
-oc create dc myapp --image=172.30.18.201:5000/development-username/myapp:promoteQA
+oc create dc myapp --image={{REGISTRY_ADDRRESS}}/development-username/myapp:promoteQA
 oc deploy myapp --cancel
 oc patch dc/myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}'
 oc deploy myapp --cancel -n testing-username
@@ -408,7 +415,7 @@ We can do the same setup for the production project using the promotePRD image t
 [source]
 ----
 oc project production-username
-oc create dc myapp --image=172.30.18.201:5000/development-username/myapp:promotePRD
+oc create dc myapp --image={{REGISTRY_ADDRRESS}}/development-username/myapp:promotePRD
 oc deploy myapp --cancel
 oc patch dc/myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}'
 oc deploy myapp --cancel

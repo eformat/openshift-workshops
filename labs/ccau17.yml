@@ -7,6 +7,7 @@ vars:
   DOWNLOAD_CLIENT_LIN64: "https://drive.google.com/open?id=0BzSBX7yS9LvaaXI1MmRCQjY5cTg"
   CONSOLE_ADDRESS: abc-demo-ocp.anzlab.bne.redhat.com:8443
   ROUTER_ADDRESS: "10.64.30.217.xip.io"
+  REGISTRY_ADDRRESS: "172.30.32.10:5000"
   USER_NAME: "username"
   USER_PASSWORD: "password"
 modules:
