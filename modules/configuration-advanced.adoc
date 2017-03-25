@@ -133,7 +133,7 @@ Build and deploy the application using the *spring-boot-apm* template and S2I im
 
 [source]
 ----
-oc new-app --template=spring-boot-apm -p SOURCE_REPOSITORY_URL="https://github.com/eformat/camel-springboot-rest-ose.git",APPLICATION_NAME=camel-springboot-rest
+oc new-app --template=spring-boot-apm -p SOURCE_REPOSITORY_URL="https://github.com/eformat/camel-springboot-rest-ose.git" -p APPLICATION_NAME=camel-springboot-rest
 
 --> Deploying template "spring-boot-apm" in project "openshift"
 

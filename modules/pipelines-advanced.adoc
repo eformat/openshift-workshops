@@ -364,7 +364,7 @@ We can deploy our Jenkins container now:
 
 [source]
 ----
-oc new-app -n cicd-username --template=jenkins-persistent -p JENKINS_IMAGE_STREAM_TAG=jenkins-2-centos7:latest,NAMESPACE=openshift,MEMORY_LIMIT=2048Mi,ENABLE_OAUTH=true
+oc new-app -n cicd-username --template=jenkins-persistent -p JENKINS_IMAGE_STREAM_TAG=jenkins-2-centos7:latest -p NAMESPACE=openshift -p MEMORY_LIMIT=2048Mi -p ENABLE_OAUTH=true
 ----
 
 And create the pipeline:
