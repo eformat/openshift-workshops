@@ -1,10 +1,10 @@
 name: Container Camp AU 2017
 logo: cc-au-hero-426a54ac.svg
 vars:
-  DOWNLOAD_CLIENT_WINDOWS: "https://drive.google.com/open?id=0BzSBX7yS9LvaOTIyX0tOQUljVXc"
-  DOWNLOAD_CLIENT_MAC: "https://drive.google.com/open?id=0BzSBX7yS9LvaeVdJT1ZGSDJDX2s"
+  DOWNLOAD_CLIENT_WINDOWS: "https://drive.google.com/open?id=0BzSBX7yS9LvadXdjdk0wczNRNE0"
+  DOWNLOAD_CLIENT_MAC: "https://drive.google.com/open?id=0BzSBX7yS9LvaLVFqUDhDRFp2WDg"
   DOWNLOAD_CLIENT_LIN32: ""
-  DOWNLOAD_CLIENT_LIN64: "https://drive.google.com/open?id=0BzSBX7yS9LvaaXI1MmRCQjY5cTg"
+  DOWNLOAD_CLIENT_LIN64: "https://drive.google.com/open?id=0BzSBX7yS9LvadXpnWDE0X1AybkE"
   CONSOLE_ADDRESS: abc-demo-ocp.anzlab.bne.redhat.com:8443
   ROUTER_ADDRESS: "10.64.30.217.xip.io"
   REGISTRY_ADDRRESS: "172.30.32.10:5000"
