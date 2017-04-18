@@ -33,15 +33,15 @@ Load the following templates for Jenkins if they are not present in your OpenShi
 
 [source]
 ----
-oc create -f https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.4/quickstart-templates/jenkins-ephemeral-template.json -n openshift
-oc create -f https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.4/quickstart-templates/jenkins-persistent-template.json -n openshift
+oc replace -f https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.5/quickstart-templates/jenkins-ephemeral-template.json -n openshift
+oc replace -f https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.5/quickstart-templates/jenkins-persistent-template.json -n openshift
 ----
 
 Load the sample application template as well:
 
 [source]
 ----
-oc create -f https://raw.githubusercontent.com/openshift/origin/master/examples/jenkins/pipeline/samplepipeline.yaml -n openshift
+oc replace -f https://raw.githubusercontent.com/openshift/origin/master/examples/jenkins/pipeline/samplepipeline.yaml -n openshift
 ----
 
 The OpenShift cluster should be configured to automatically provision Jenkins by setting the following cluster wide configuration in "master-config.yaml"
@@ -64,12 +64,13 @@ for the jenkins kubernetes plugin.
 
 ### A Simple Pipeline
 
-Create a project named "samplepipeline-username"
+Login, and create a project named "samplepipeline-username"
 
 `Remember` to substitute the username with your own id.
 
 [source]
 ----
+oc login -u {{USER_NAME}}
 oc new-project samplepipeline-username --display-name="Pipeline Sample" --description='Pipeline Sample'
 ----
 
@@ -83,7 +84,7 @@ oc new-app jenkins-pipeline-example
 A mongodb and jenkins pod should be provisioned into your project. We can browse to the "Build", "Pipeline", "Configuration" and see the 
 groovy DSL Jenkinsfile for this pipeline.
 
-image::/images/15-simple-pipeline.png[A Simple Pipeline,800,align="center"]
+image::/images/15-simple-pipeline.png[A Simple Pipeline,1100,align="center"]
 
 The "openshiftBuild" and "openshiftDeploy" method calls are from the Jenkins OpenShift Pipeline plugin.
 
@@ -203,7 +204,7 @@ Once the pod that runs the pipeline instruction starts, you should see the runni
 
 image::/images/15-bluegreen-in-progress.png[Blue Green pipeline in progress,800,align="center"]
 
-A new build and deployment of the 
+A build and deployment of the application version that is `not` currently routed to via the `bluegreen` route (i.e. either blue or green) will run.
 
 There is a manual input task to approve switching the bluegreen route. Select 'Input Required' and login to Jenkins:
 
@@ -249,6 +250,8 @@ OpenShfit's exposes API's to manipulate the Routing tier. We can use this to cre
 
 A/B deployments get their name from the ability to test the new application features as part of the deployment. This way you can create a hypothesis, perform an A/B
 deployment, test whether your hypothesis is true or false and either rollback to your initial application state (A) or proceed with your new application state (B).
+
+image::/images/15-ab-deployment.png[A/B Deployments,800,align="center"]
 
 Let's create weighted route backends for our application. We need to change the default load balacing behaviour from 'least-connection' to 'round-robin'
 

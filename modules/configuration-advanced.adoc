@@ -119,6 +119,7 @@ Login and create a project for our SpringBoot application:
 
 [source]
 ---- 
+oc login -u {{USER_NAME}}
 oc new-project helloservice-username --display-name="Helloservice" --description="Helloservice"
 ----
 
