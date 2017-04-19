@@ -447,7 +447,7 @@ image::/images/15-running-application.png[Running Application,800,align="center"
 
 ### Summary
 
-You have successfully:
+Congratulations ! You have successfully:
 
 - created and deployed the hello world integrted pipeline sample
 - used BlueGreen, A/B deployment strategies using integrated pipelines

@@ -1,8 +1,7 @@
 ## Lab: Zero Downtime Deployment; Externalizing Application Configuration; Hot Reconfiguration; Application Performance Managment
 
 ### Background: 
-Once you build your applications, you can guarantee that you will need to change them ! Requihawkular-nts change, system functionality
-evolves, defects need to be fixed.
+Once you build your applications, you can guarantee that you will need to change them !
 
 We want to ensure that frequent deployments do not impact the availability of our services. And this is where the Zero Downtime Deployment
 (ZDD) comes in. This allows you to deploy a new version of your service without interrupting the operation of the service.
@@ -11,15 +10,19 @@ Most applications require configuration using environment variables, configurati
 should be externalized form the application and the immutable image content in order to keep the image portable across our environments.
 
 In this lab we are going to learn about using Openshift to deploy a REST web service and demonstrate various configuration aspects to achieve ZDD.
-We'll also demonstrate hot reconfiguration capabilites and application performance managment along the way.
+We'll also demonstrate hot reconfiguration capabilites and application performance managment using popular frameworks (Hawkular, Prometheus, Grafana, Jolokia and Hawt.io) 
+along the way.
 
-The application stack consists of supported RedHat tools from open source projects including
+The application stack consists of tools from open source projects including:
 
 - Java - http://openjdk.java.net/
 - Camel - http://camel.apache.org/
 - SpringBoot - https://projects.spring.io/spring-boot/
 - Fabric8 - https://fabric8.io/
 - Hawkular APM - http://www.hawkular.org/hawkular-apm/
+- Prometheus - https://prometheus.io/docs/querying/basics/
+- Grafana - http://grafana.org/
+- Hawt.io - http://hawt.io/
 
 ### Prerequisites
 
@@ -75,12 +78,17 @@ A community based equivalent image is `docker.io/fabric8/java-jboss-openjdk8-jdk
 
 ##### Hawkular APM Agent
 
-We are going to leverage Hawkular Application Performance Managment later in the lab. So, we have layered ontop of the base S2I Java image
-the Hawkular agent using a *Dockerfile*
+We are going to leverage Hawkular Application Performance Managment later in the lab. Hawkular APM can be achieved in three ways:
+* Explicit intialization (in your code)
+* As a spring boot annotation (_@CamelOpenTracing_)
+* Using a java agent
+
+We're going to use the java agent method today as it demonstrates a common pattern you may have for other agent based tools. We have layered
+ on top of the base S2I Java image the Hawkular agent using a *Dockerfile*
 
 * https://github.com/eformat/hawkular-apm-template/blob/master/Dockerfile
 
-The image has been built and deployed into the shared openshift namespace:
+The image has been built and deployed into the shared `openshift` namespace so everyone can use it:
 
 [source]
 ---- 
@@ -106,9 +114,21 @@ We have also loaded the Hawkular APM server template and loaded it into OpenShif
 oc create -f https://raw.githubusercontent.com/eformat/hawkular-apm-template/master/templates/hawkular-apm-server.yml
 ----
 
+#####  Prometheus and Grafana
+
+We are also going to deploy a local prometheus and grafana instance for application monitoring as well, so we have created an application template using
+ the fabric8 project templaet and loaded it into Openshift:
+
+[source]
+---- 
+oc create -f https://raw.githubusercontent.com/fabric8io/templates/master/default/template/metrics.json -n openshift
+----
+
 ##### Reference Links
 * https://hawkular.gitbooks.io
 * https://github.com/jboss-dockerfiles/hawkular-apm/tree/master/openshift-templates
+* http://www.hawkular.org/blog/2017/03/24/distributed-tracing-with-camel.html
+* https://fabric8.io/guide/metrics.html
 
 
 ### Now you get your hands dirty, build and deploy the application
@@ -383,9 +403,91 @@ as well as see summary aatributes
 
 image::/images/28-camel-messages.png[Camel Route Attributes,1000,align="center"]
 
+##### Prometheus and Grafana
+Prometheus is another great opensource tool for tracking metrics and integrates with Grafana for graphing.
+
+Our application exposes prometheus metrics at the `/prometheus` URL. Springboot is also configured to expose actuator metrics at `/metrics`.
+
+image::/images/28-raw-prometheus.png[Raw prometheus metrics,800,align="center"]
+
+Lets deploy prometheus locally so we can try it out.
+
+First create the metrics service account used by prometheus
+
+`Remember` to substitute the username with your own id.
+
+[source]
+----
+oc project helloservice-username
+oc create serviceaccount metrics
+----
+
+A cluster admin will need to allow your project's metric user to query kubernetes:
+
+[source]
+----
+oc login -u admin
+oc adm policy add-cluster-role-to-user cluster-reader system:serviceaccount:helloservice-username:metrics
+----
+
+Lets deploy the Prometheus and Grafana application using the metrics template into our project and expose their routes:
+
+[source]
+----
+oc new-app metrics
+oc expose service prometheus --port=9090
+oc expose svc/grafana2 --port 3000
+----
+
+The Prometheus configuration uses service annotations to discover endpoints, lets annotate our running springboot service
+
+[source]
+----
+oc annotate svc camel-springboot-rest prometheus.io/path='/prometheus' prometheus.io/port='8080' prometheus.io/scrape='true' 
+----
+
+If we browse to Prometheus via its route, we can click on the *Status* tab and see the service state is *UP*
+
+image::/images/28-prometheus-service-up.png[Prometheus service state,1000,align="center"]
+
+Next we can goto the *Graph* tab, and plot one of the metrics - for example: `jvm_memory_pool_bytes_used`. You can plot any number
+of metrics from the Openshift platform as well (remember we gave it view cluster permissions above).
+
+image::/images/28-prometheus-graph.png[Prometheus Mertic Graphing,1000,align="center"]
+
+A more elegant graphing solution is of course Grafana - sign in using `admin/admin` credentials to the Grafana console:
+
+image::/images/28-grafana-login.png[Grafana Login,400,align="center"]
+
+There are a bunch of pre-defined dashborads, and we will import our own custom dashboard that queries prometheus. 
+
+Download this dashboard definition:
+
+[source]
+----
+wget https://raw.githubusercontent.com/eformat/camel-springboot-rest-ose/master/camel-springboot-rest-os-grafana-dashboard.json
+----
+
+Select Home -> Import -> Choose file in Grafana, and select `camel-springboot-rest-os-grafana-dashboard.json`. You should see the dashboard
+showing memory and a *hello mike* count. Save this.
+
+image::/images/28-grafana-dashboard.png[Grafana dashboard,1000,align="center"]
+
+
 ##### (Future - Optional) Hawkular OpenShift Agent (HOSA)
+
+System wide metrics deployments for general application performance monitoring is being worked on in the community.
 
 * http://www.hawkular.org/blog/2017/01/17/obst-hosa.html
 
 image::/images/28-hosa.png[HOSA,1000,align="center"]
 
+### Summary
+
+Congratulations ! You have successfully:
+
+- created and deployed a springboot microservice
+- configured liveness and readiness probes that allow rolling deployment of the service
+- used configuration maps, environment variables and properties files to configure your application
+- hot reloaded the springboot jvm when the configuraiton changes
+- monitored, traced and graphed your application performance
