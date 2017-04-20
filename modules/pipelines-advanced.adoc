@@ -536,7 +536,9 @@ We are now ready to create the pull request in github. Browse to you repository,
 
 image::/images/15-github-create-pull-request.png[Build PR Config,600,align="center"]
 
-Once created, go back to jenkins and select *Scan Repository Now* link in your repository pipeline (classic view) - we could also adjust the repo scan time to be smaller in the configuration:
+Once created, go back to jenkins and select *Scan Repository Now* link in your repository pipeline (classic view).
+
+We could also adjust the repo scan time to be smaller in the configuration (or use a `webhook` if the OpenShift cluster is available publicly for github to call):
 
 image::/images/15-scan-repository-now.png[Scan Repo Now,600,align="center"]
 
