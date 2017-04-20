@@ -445,10 +445,129 @@ You can test the application, and them manually approve the image tagging/promot
 
 image::/images/15-running-application.png[Running Application,800,align="center"]
 
+### Versions and Pull Requests
+
+##### Prerequisites
+* You will need a valid github user account - https://github.com/
+* You need `git` installed locally
+
+A common developer task is to merge pull requests from other branches. The pipeline plugins in Jenkins support multi-branch merging of pull requests.
+
+The OpenShift pipeline plugin and UI is not so advanced in its integration yet, although we can leverage OpenShift to build and merge PR's. 
+
+Let's try it out.
+
+Create a fork of this repository:
+
+[source]
+----
+https://github.com/eformat/node-hello-world-swagger.git
+----
+
+We will reuse the jenkins instance from before, or recreate it if you haven't done so already:
+
+`Remember` to substitute the username with your own id
+
+[source]
+----
+oc new-project cicd-username --display-name='CICD Jenkins' --description='CICD Jenkins'
+oc new-app -n cicd-username --template=jenkins-persistent -p JENKINS_IMAGE_STREAM_TAG=jenkins-2-centos7:latest -p NAMESPACE=openshift -p MEMORY_LIMIT=2048Mi -p ENABLE_OAUTH=true
+----
+
+Login to jenkins with your `username` and select *Open Blue Ocean* at the top of the screen. 
+
+image::/images/15-blue-ocean.png[Blue Ocean,800,align="center"]
+
+Select the *New Pipeline* button and select *Github*.
+
+image::/images/15-blue-ocean-create-pipeline.png[Create Pipeline,600,align="center"]
+
+You need to create a github access token - *Create an access key here* and use that for accessing your source code
+and repositories.
+
+image::/images/15-blue-ocean-github-auth.png[Create access key,600,align="center"]
+
+Select your organisation and then select *New Pipeline* from a single repository - use the `node-hello-world-swagger` repo you forked earlier. Select *Create Pipeline*
+
+image::/images/15-blue-ocean-pipeline-create.png[Create pipeline from repo,600,align="center"]
+
+The pipeline plugin will automatically scan your github code repository for branches that contain `Jenkinsfile`'s and create multi-branch pipeline job entries for these.
+
+A *master* branch pipeline build should start running:
+
+image::/images/15-blue-ocean-pipeline-build-complete.png[Pipeline run ok,600,align="center"]
+
+You can match the git references between the deployed pod, its logs and the build that was performed.
+
+image::/images/15-blue-ocean-pipeline-run-summary.png[Pipeline run summary,600,align="center"]
+
+From the running pod:
+
+image::/images/15-blue-ocean-pipeline-run-pod.png[Running pod,600,align="center"]
+
+Before we go further, we need to change our pipeline configuration to automatically build PR's - it is not set as the default. Go to the classic jenkins view
+and select *your user name* -> *Confiugure*. Check the `Build origin PRs (merged with base branch)` checkbox and select *Save*.
+
+image::/images/15-blue-ocean-pipeline-config.png[Build PR Config,600,align="center"]
+
+Let's create a git branch for making a change on. Clone you git repo, and create a branch called *feature1*
+
+`Remember` to substitute the username with your own id
+
+[source]
+----
+git clone https://github.com/<username>/node-hello-world-swagger.git
+cd node-hello-world-swagger
+git branch feature1
+git checkout feature1
+----
+
+Make a simple change to the code, it doesn't matter what it is. Commit the change and push the change from your local branch to github:
+
+[source]
+----
+echo "pr request ccau" > changelog
+git add .
+git commit -m "changed changelog"
+git push --set-upstream origin feature1
+----
+
+We are now ready to create the pull request in github. Browse to you repository, goto the *Pull requests* tab, and *Create a pull request* between master and feature1 branches:
+
+image::/images/15-github-create-pull-request.png[Build PR Config,600,align="center"]
+
+Once created, go back to jenkins and select *Scan Repository Now* link in your repository pipeline (classic view) - we could also adjust the repo scan time to be smaller in the configuration:
+
+image::/images/15-scan-repository-now.png[Scan Repo Now,600,align="center"]
+
+A number of things will happen!
+* a new pipeline for the `feature1` branch will be created and a new pipeline build and deploy will start
+
+image::/images/15-feature-branch-pielien.png[Feature Branch Pipeline,600,align="center"]
+
+* the pull request can be seen in the *Pull requests* tab and a new pipeline build and deploy will start
+
+image::/images/15-pr-pipeline.png[PR Pipeline,600,align="center"]
+
+Back in github, we can also see that CI checks are updated with the build details:
+
+image::/images/15-github-pr-checks.png[GitHub PR Checks,600,align="center"]
+
+Once the *PR* and *feature1* branch pipelines have completed in OpenShift, you can merge from the github UI into `master`
+
+image::/images/15-github-pr-merge.png[GitHub PR Merge,600,align="center"]
+
+and delete the `feature1` branch if it is no longer required:
+
+image::/images/15-github-delete-feature1.png[GitHub Delete feature1 branch,600,align="center"]
+
+The different application deployments and branches are running in OpenShift and we can validate the correct git hash versions were built and deployed.
+
 ### Summary
 
 Congratulations ! You have successfully:
 
 - created and deployed the hello world integrted pipeline sample
 - used BlueGreen, A/B deployment strategies using integrated pipelines
-- deployed and configured a multi-project pipeline example that demonstrates a build, tag and promote lifecycle 
+- deployed and configured a multi-project pipeline example that demonstrates a build, tag and promote lifecycle
+- built and deployed a pull request using a git feature branch, pipelines and openshift 
