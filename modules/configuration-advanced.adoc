@@ -133,14 +133,12 @@ oc create -f https://raw.githubusercontent.com/fabric8io/templates/master/defaul
 
 ### Now you get your hands dirty, build and deploy the application
 
-`Remember` to substitute the username with your own id.
-
 Login and create a project for our SpringBoot application:
 
 [source]
 ---- 
-oc login -u {{USER_NAME}}
-oc new-project helloservice-username --display-name="Helloservice" --description="Helloservice"
+oc login -u {{USER_NAME}} -p {{USER_PASSWORD}}
+oc new-project helloservice-{{USER_NAME}} --display-name="Helloservice" --description="Helloservice"
 ----
 
 We are going to allow our default service account to *view* the kubernetes api (this is for our spring hot reload function later on)
@@ -414,11 +412,9 @@ Lets deploy prometheus locally so we can try it out.
 
 First create the metrics service account used by prometheus
 
-`Remember` to substitute the username with your own id.
-
 [source]
 ----
-oc project helloservice-username
+oc project helloservice-{{USER_NAME}}
 oc create serviceaccount metrics
 ----
 
@@ -427,7 +423,7 @@ A cluster admin will need to allow your project's metric user to query kubernete
 [source]
 ----
 oc login -u admin
-oc adm policy add-cluster-role-to-user cluster-reader system:serviceaccount:helloservice-username:metrics
+oc adm policy add-cluster-role-to-user cluster-reader system:serviceaccount:helloservice-{{USER_NAME}}:metrics
 ----
 
 Lets deploy the Prometheus and Grafana application using the metrics template into our project and expose their routes:

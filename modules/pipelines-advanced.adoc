@@ -64,14 +64,12 @@ for the jenkins kubernetes plugin.
 
 ### A Simple Pipeline
 
-Login, and create a project named "samplepipeline-username"
-
-`Remember` to substitute the username with your own id.
+Login, and create a project named "samplepipeline-{{USER_NAME}}"
 
 [source]
 ----
-oc login -u {{USER_NAME}}
-oc new-project samplepipeline-username --display-name="Pipeline Sample" --description='Pipeline Sample'
+oc login -u {{USER_NAME}} -p {{USER_PASSWORD}}
+oc new-project samplepipeline-{{USER_NAME}} --display-name="Pipeline Sample" --description='Pipeline Sample'
 ----
 
 We can then create our sample application from template:
@@ -150,11 +148,9 @@ image::/images/15-blue-green-deployments.png[Blue Green Deployments,800,align="c
 
 Let's create a new project:
 
-`Remember` to substitute the username with your own id.
-
 [source]
 ----
-oc new-project bluegreen-username --display-name="Blue Green Deployments" --description="Blue Green Deployments"
+oc new-project bluegreen-{{USER_NAME}} --display-name="Blue Green Deployments" --description="Blue Green Deployments"
 ----
 
 Lets deploy both our blue and green applications into the same project:
@@ -231,15 +227,15 @@ Enter the webhook cpoied from OpenShift -> Project -> Builds -> Pieplines -> blu
 
 [source]
 ----
-Payload URL: https://<master api server>:8443/oapi/v1/namespaces/bluegreen-username/buildconfigs/bluegreen-pipeline/webhooks/<secret>/github
+Payload URL: https://<master api server>:8443/oapi/v1/namespaces/bluegreen-{{USER_NAME}}/buildconfigs/bluegreen-pipeline/webhooks/<secret>/github
 ----
 
 Patch the source references in your project to use your github fork:
 
 [source]
 ----
-oc patch bc/blue -p '{"spec":{"source":{"git":{"uri":"https://github.com/<your username>/bluegreen.git","ref": "master"}}}}' --type=strategic -n bluegreen-username
-oc patch bc/green -p '{"spec":{"source":{"git":{"uri":"https://github.com/<your username>/bluegreen.git","ref": "green"}}}}' --type=strategic -n bluegreen-username
+oc patch bc/blue -p '{"spec":{"source":{"git":{"uri":"https://github.com/<your username>/bluegreen.git","ref": "master"}}}}' --type=strategic -n bluegreen-{{USER_NAME}}
+oc patch bc/green -p '{"spec":{"source":{"git":{"uri":"https://github.com/<your username>/bluegreen.git","ref": "green"}}}}' --type=strategic -n bluegreen-{{USER_NAME}}
 ----
 
 You can now make edits in GitHub and these will trigger a build of your OpenShift pipeline.
@@ -277,11 +273,9 @@ image::/images/15-ab-adjust-routes.png[Adjust the routes,400,align="center"]
 
 We can test that 80% of traffic is going to our 'A' (blue) version, and 20% is going to our 'B' (green) version:
 
-`Remember` to substitute the username and hostname with your own id and environment URL:
-
 [source]
 ----
-for x in {1..10}; do curl -s http://bluegreen-bluegreen-username.{{ROUTER_ADDRESS}}/ | grep -q blue && echo $x blue || echo $x green; done
+for x in {1..10}; do curl -s http://bluegreen-bluegreen-{{USER_NAME}}.{{ROUTER_ADDRESS}}/ | grep -q blue && echo $x blue || echo $x green; done
 
 1 blue
 2 blue
@@ -299,7 +293,7 @@ Beacuase the default configuraiton for HAProxy is to honour sticky sessions usin
 
 [source]
 ----
-for x in {1..10}; do curl -c /tmp/cookie -b /tmp/cookie -s http://bluegreen-bluegreen-username.{{ROUTER_ADDRESS}} | grep -q blue && echo $x blue || echo $x green; done
+for x in {1..10}; do curl -c /tmp/cookie -b /tmp/cookie -s http://bluegreen-bluegreen-{{USER_NAME}}.{{ROUTER_ADDRESS}} | grep -q blue && echo $x blue || echo $x green; done
 
 1 blue
 2 blue
@@ -325,38 +319,36 @@ image::/images/15-multi-project-pipeline.png[Multi project pipeline,800,align="c
 
 We are going to setup four projects for our pipeline activities:
 
-`Remember` to substitute the username with your own id
-
-* cicd-username - containing our Jenkins instance
-* development-username - for building and developing our application images 
-* testing-username - for testing our application
-* production-username - hosting our production application
+* cicd-{{USER_NAME}} - containing our Jenkins instance
+* development-{{USER_NAME}} - for building and developing our application images 
+* testing-{{USER_NAME}} - for testing our application
+* production-{{USER_NAME}} - hosting our production application
 
 Create the projects:
 
 [source]
 ----
-oc new-project cicd-username --display-name='CICD Jenkins' --description='CICD Jenkins'
-oc new-project development-username --display-name='MyApp Development' --description='MyApp Development'
-oc new-project testing-username --display-name='MyApp Testing' --description='MyApp Testing'
-oc new-project production-username --display-name='MyApp Production' --description='MyApp Production'
+oc new-project cicd-{{USER_NAME}} --display-name='CICD Jenkins' --description='CICD Jenkins'
+oc new-project development-{{USER_NAME}} --display-name='MyApp Development' --description='MyApp Development'
+oc new-project testing-{{USER_NAME}} --display-name='MyApp Testing' --description='MyApp Testing'
+oc new-project production-{{USER_NAME}} --display-name='MyApp Production' --description='MyApp Production'
 ----
 
 Provide the jenkins service account in the cicd project access to our other projects:
 
 [source]
 ----
-oc policy add-role-to-user edit system:serviceaccount:cicd-username:jenkins -n development-username
-oc policy add-role-to-user edit system:serviceaccount:cicd-username:jenkins -n testing-username
-oc policy add-role-to-user edit system:serviceaccount:cicd-username:jenkins -n production-username
+oc policy add-role-to-user edit system:serviceaccount:cicd-{{USER_NAME}}:jenkins -n development-{{USER_NAME}}
+oc policy add-role-to-user edit system:serviceaccount:cicd-{{USER_NAME}}:jenkins -n testing-{{USER_NAME}}
+oc policy add-role-to-user edit system:serviceaccount:cicd-{{USER_NAME}}:jenkins -n production-{{USER_NAME}}
 ----
 
 Allow the testing and production service accounts to pull images from the development namespace:
 
 [source]
 ----
-oc policy add-role-to-group system:image-puller system:serviceaccounts:testing-username -n development-username
-oc policy add-role-to-group system:image-puller system:serviceaccounts:production-username -n development-username
+oc policy add-role-to-group system:image-puller system:serviceaccounts:testing-{{USER_NAME}} -n development-{{USER_NAME}}
+oc policy add-role-to-group system:image-puller system:serviceaccounts:production-{{USER_NAME}} -n development-{{USER_NAME}}
 ----
 
 Your should now have these projects:
@@ -367,34 +359,30 @@ We can deploy our Jenkins container now:
 
 [source]
 ----
-oc new-app -n cicd-username --template=jenkins-persistent -p JENKINS_IMAGE_STREAM_TAG=jenkins-2-centos7:latest -p NAMESPACE=openshift -p MEMORY_LIMIT=2048Mi -p ENABLE_OAUTH=true
+oc new-app -n cicd-{{USER_NAME}} --template=jenkins-persistent -p JENKINS_IMAGE_STREAM_TAG=jenkins-2-centos7:latest -p NAMESPACE=openshift -p MEMORY_LIMIT=2048Mi -p ENABLE_OAUTH=true
 ----
 
 And create the pipeline:
 
 [source]
 ----
-oc create -n cicd-username -f https://raw.githubusercontent.com/eformat/pipeline-configs/master/pipeline.yaml
+oc create -n cicd-{{USER_NAME}} -f https://raw.githubusercontent.com/eformat/pipeline-configs/master/pipeline.yaml
 ----
 
 Lets create our development application using Source to Image.
 
-`Remember` to substitute the username with your own id and hostname with the correct hostname for your environment:
-
 [source]
 ----
-oc project development-username
+oc project development-{{USER_NAME}}
 oc new-app openshift/php:5.6~https://github.com/devops-with-openshift/cotd.git#master --name=myapp
-oc expose service myapp --hostname=cotd-development-username.{{ROUTER_ADDRESS}} --name=myapp
+oc expose service myapp --hostname=cotd-development-{{USER_NAME}}.{{ROUTER_ADDRESS}} --name=myapp
 ----
-
-`Remember` to substitute the username with your own id and hostname with the correct hostname for your environment
 
 `Be sure to use your own environment registry ip and image stream from this command:`
 
 ++++
 <pre class="highlight">
-<code>oc get is -n development-username --template='&#123;{range .items}}&#123;{.status.dockerImageRepository}}&#123;{end}}'</code>
+<code>oc get is -n development-{{USER_NAME}} --template='&#123;{range .items}}&#123;{.status.dockerImageRepository}}&#123;{end}}'</code>
 </pre>
 ++++
 
@@ -402,13 +390,13 @@ Lets setup our testing project, using the image from development and changing th
 
 [source]
 ----
-oc project testing-username
-oc create dc myapp --image={{REGISTRY_ADDRRESS}}/development-username/myapp:promoteQA
+oc project testing-{{USER_NAME}}
+oc create dc myapp --image={{REGISTRY_ADDRRESS}}/development-{{USER_NAME}}/myapp:promoteQA
 oc deploy myapp --cancel
 oc patch dc/myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}'
-oc deploy myapp --cancel -n testing-username
+oc deploy myapp --cancel -n testing-{{USER_NAME}}
 oc expose dc myapp --port=8080
-oc expose service myapp --hostname=cotd-testing-username.{{ROUTER_ADDRESS}} --name=myapp
+oc expose service myapp --hostname=cotd-testing-{{USER_NAME}}.{{ROUTER_ADDRESS}} --name=myapp
 ----
 
 We are using the arbitrary :promoteQA image tag for the testing deployment (which doesn't yet exist)
@@ -417,20 +405,20 @@ We can do the same setup for the production project using the promotePRD image t
 
 [source]
 ----
-oc project production-username
-oc create dc myapp --image={{REGISTRY_ADDRRESS}}/development-username/myapp:promotePRD
+oc project production-{{USER_NAME}}
+oc create dc myapp --image={{REGISTRY_ADDRRESS}}/development-{{USER_NAME}}/myapp:promotePRD
 oc deploy myapp --cancel
 oc patch dc/myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}'
 oc deploy myapp --cancel
 oc expose dc myapp --port=8080
-oc expose service myapp --hostname=cotd-production-username.{{ROUTER_ADDRESS}} --name=myapp
+oc expose service myapp --hostname=cotd-production-{{USER_NAME}}.{{ROUTER_ADDRESS}} --name=myapp
 ----
 
-Now we are ready to run our pipeline deployment from the cicd-username project.
+Now we are ready to run our pipeline deployment from the cicd-{{USER_NAME}} project.
 
 [source]
 ----
-oc start-build pipeline -n cicd-username
+oc start-build pipeline -n cicd-{{USER_NAME}}
 ----
 
 The first step will log you in to Jennkins via OAuth and query you for your project paramterised username
@@ -466,15 +454,13 @@ https://github.com/eformat/node-hello-world-swagger.git
 
 We will reuse the jenkins instance from before, or recreate it if you haven't done so already:
 
-`Remember` to substitute the username with your own id
-
 [source]
 ----
-oc new-project cicd-username --display-name='CICD Jenkins' --description='CICD Jenkins'
-oc new-app -n cicd-username --template=jenkins-persistent -p JENKINS_IMAGE_STREAM_TAG=jenkins-2-centos7:latest -p NAMESPACE=openshift -p MEMORY_LIMIT=2048Mi -p ENABLE_OAUTH=true
+oc new-project cicd-{{USER_NAME}} --display-name='CICD Jenkins' --description='CICD Jenkins'
+oc new-app -n cicd-{{USER_NAME}} --template=jenkins-persistent -p JENKINS_IMAGE_STREAM_TAG=jenkins-2-centos7:latest -p NAMESPACE=openshift -p MEMORY_LIMIT=2048Mi -p ENABLE_OAUTH=true
 ----
 
-Login to jenkins with your `username` and select *Open Blue Ocean* at the top of the screen. 
+Login to jenkins with your `{{USER_NAME}}` and select *Open Blue Ocean* at the top of the screen. 
 
 image::/images/15-blue-ocean.png[Blue Ocean,800,align="center"]
 
@@ -511,8 +497,6 @@ and select *your user name* -> *Confiugure*. Check the `Build origin PRs (merged
 image::/images/15-blue-ocean-pipeline-config.png[Build PR Config,600,align="center"]
 
 Let's create a git branch for making a change on. Clone you git repo, and create a branch called *feature1*
-
-`Remember` to substitute the username with your own id
 
 [source]
 ----

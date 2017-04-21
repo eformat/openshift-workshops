@@ -8,8 +8,8 @@ vars:
   CONSOLE_ADDRESS: abc-demo-ocp.anzlab.bne.redhat.com:8443
   ROUTER_ADDRESS: "192.168.137.2.xip.io"
   REGISTRY_ADDRRESS: "172.30.1.1:5000"
-  USER_NAME: "username"
-  USER_PASSWORD: "password"
+  USER_NAME: "${USER_NAME}"
+  USER_PASSWORD: "${USER_PASSWORD}"
 modules:
   activate:
     - install

@@ -6,11 +6,19 @@ The first thing we want to do to ensure that our `oc` command line tools was
 installed and successfully added to our path is login to the OpenShift
 environment that has been provided for this Roadshow session.  In
 order to login, we will use the `oc` command and then specify the server that we
-want to authenticate to.  Issue the following command:
+want to authenticate to.  For simplicity, export your username and pasword (so you can easily cut-and-paste the code examples)
 
 [source]
 ----
-$ oc login {{CONSOLE_ADDRESS}}
+export USER_NAME=user01
+export USER_PASSWORD=password01
+----
+
+Issue the following command:
+
+[source]
+----
+$ oc login {{CONSOLE_ADDRESS}} -u {{USER_NAME}} -p {{USER_PASSWORD}}
 ----
 
 You may see the following output:
@@ -40,15 +48,6 @@ the following command:
 $ oc login {{CONSOLE_ADDRESS}} --insecure-skip-tls-verify=true
 ----
 ====
-
-Once you issue the `oc login` command, you will be prompted for the username and
-password combination for your user account:
-
-[source,role=copypaste]
-----
-Username: {{USER_NAME}}
-Password: {{USER_PASSWORD}}
-----
 
 Once you have authenticated to the OpenShift server, you will see the
 following confirmation message:
@@ -104,13 +103,7 @@ works, open your browser and go to the following URL:
 
 *link:https://{{CONSOLE_ADDRESS}}[]*
 
-The first screen you will see is the authentication screen.  Enter in the following credentials:
-
-[source]
-----
-Username: {{USER_NAME}}
-Password: {{USER_PASSWORD}}
-----
+The first screen you will see is the authentication screen.  Enter in your credentials.
 
 image::/images/ocp-login.png[OpenShift Login Screen]
 
