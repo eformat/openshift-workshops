@@ -11,9 +11,13 @@ We are going to run through a number of pipeline examples demonstrating common b
 
 The multi-project example will focus on the build / tag / promote lifecycle using our CI/CD tooling - Jenkins.
 
-### Prerequisites
+++++ 
+<input id="toggle" type="checkbox" unchecked>
+<label for="toggle">Lab Setup</label>
+<div class="sect2" id="expand"><section>
+++++
 
-`The pre-reqs have already been done for this lab` 
+`DO NOT DO THIS - The pre-reqs have already been done for this lab environment` 
 
 Let's run through the setup so you can repeat in other environments...
 
@@ -61,6 +65,10 @@ The OpenShift cluster should be configured to automatically provision Jenkins by
 The source code for these jenkins images is in github - https://github.com/openshift/jenkins and examples of its use
 can be found here - https://github.com/openshift/origin/tree/master/examples/jenkins and here - https://github.com/openshift/jenkins-plugin
 for the jenkins kubernetes plugin.
+
+++++ 
+</div></section></div>
+++++
 
 ### A Simple Pipeline
 
