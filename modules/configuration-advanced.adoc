@@ -231,7 +231,7 @@ image::/images/28-swagger-reposnse.png[Swagger Helloservice,800,align="center"]
 
 The `Default Prop Hi` greeting is set in the spring application properties file
 
-* https://github.com/eformat/camel-springboot-rest-ose/blob/master/src/main/resources/application.properties#L29
+* https://github.com/eformat/camel-springboot-rest-ose/blob/master/src/main/resources/application.properties#L35
 
 
 image::/images/28-spring-properties.png[Spring Properties File,600,align="center"]
@@ -482,6 +482,7 @@ image::/images/28-grafana-dashboard.png[Grafana dashboard,1000,align="center"]
 System wide metrics deployments for general application performance monitoring is being worked on and is tech preview
 
 * http://www.hawkular.org/blog/2017/01/17/obst-hosa.html
+* https://docs.openshift.org/latest/install_config/cluster_metrics.html#deploying-hawkular-openshift-agent
 
 image::/images/28-hosa.png[HOSA,1000,align="center"]
 
