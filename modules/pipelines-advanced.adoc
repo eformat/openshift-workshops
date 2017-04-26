@@ -231,7 +231,7 @@ https://github.com/devops-with-openshift/bluegreen
 
 In Github browse to Project -> Settings -> WebHooks -> Add WebHook
 
-Enter the webhook cpoied from OpenShift -> Project -> Builds -> Pieplines -> blugreen-pipeline -> GitHub WebHook URL which looks like:
+Enter the webhook copied from OpenShift -> Project -> Builds -> Pieplines -> blugreen-pipeline -> Configuration -> GitHub WebHook URL which looks like:
 
 [source]
 ----
@@ -240,11 +240,14 @@ Payload URL: https://<master api server>:8443/oapi/v1/namespaces/bluegreen-{{USE
 
 Patch the source references in your project to use your github fork:
 
-[source]
-----
-oc patch bc/blue -p '{"spec":{"source":{"git":{"uri":"https://github.com/<your username>/bluegreen.git","ref": "master"}}}}' --type=strategic -n bluegreen-{{USER_NAME}}
-oc patch bc/green -p '{"spec":{"source":{"git":{"uri":"https://github.com/<your username>/bluegreen.git","ref": "green"}}}}' --type=strategic -n bluegreen-{{USER_NAME}}
-----
+++++
+<pre class="highlight">
+<code>
+oc patch bc/blue -p '{"spec":{"source":{"git":{"uri":"https://github.com/your github username/bluegreen.git","ref": "master"}}}}' --type=strategic -n bluegreen-{{USER_NAME}}
+oc patch bc/green -p '{"spec":{"source":{"git":{"uri":"https://github.com/your github username/bluegreen.git","ref": "green"}}}}' --type=strategic -n bluegreen-{{USER_NAME}}
+</code>
+</pre>
+++++
 
 You can now make edits in GitHub and these will trigger a build of your OpenShift pipeline.
 
@@ -400,9 +403,9 @@ Lets setup our testing project, using the image from development and changing th
 ----
 oc project testing-{{USER_NAME}}
 oc create dc myapp --image={{REGISTRY_ADDRRESS}}/development-{{USER_NAME}}/myapp:promoteQA
-oc deploy myapp --cancel
+oc rollout cancel dc/myapp
 oc patch dc/myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}'
-oc deploy myapp --cancel -n testing-{{USER_NAME}}
+oc rollout cancel dc/myapp
 oc expose dc myapp --port=8080
 oc expose service myapp --hostname=cotd-testing-{{USER_NAME}}.{{ROUTER_ADDRESS}} --name=myapp
 ----
@@ -415,9 +418,9 @@ We can do the same setup for the production project using the promotePRD image t
 ----
 oc project production-{{USER_NAME}}
 oc create dc myapp --image={{REGISTRY_ADDRRESS}}/development-{{USER_NAME}}/myapp:promotePRD
-oc deploy myapp --cancel
+oc rollout cancel dc/myapp
 oc patch dc/myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}'
-oc deploy myapp --cancel
+oc rollout cancel dc/myapp
 oc expose dc myapp --port=8080
 oc expose service myapp --hostname=cotd-production-{{USER_NAME}}.{{ROUTER_ADDRESS}} --name=myapp
 ----
@@ -500,7 +503,7 @@ From the running pod:
 image::/images/15-blue-ocean-pipeline-run-pod.png[Running pod,600,align="center"]
 
 Before we go further, we need to change our pipeline configuration to automatically build PR's - it is not set as the default. Go to the classic jenkins view
-and from the top level, select the github organization entry (in the *All* tab) with *your github user name* -> *Confiugure*. And under the *Projects -> Advanced button* -> Check the `Build origin PRs (merged with base branch)` checkbox and select *Save*.
+and from the top level, select the github organization entry (in the *All* tab) with *your github user name* -> *Configure*. And under the *Projects -> Advanced button* -> Check the `Build origin PRs (merged with base branch)` checkbox and select *Save*.
 
 image::/images/15-blue-ocean-pipeline-config.png[Build PR Config,600,align="center"]
 
@@ -554,6 +557,8 @@ image::/images/15-github-pr-merge.png[GitHub PR Merge,600,align="center"]
 and delete the `feature1` branch if it is no longer required:
 
 image::/images/15-github-delete-feature1.png[GitHub Delete feature1 branch,600,align="center"]
+
+Go back to jenkins and select *Scan Repository Now* link in your repository pipeline (classic view) - the *master* branch will build with the merged code.
 
 The different application deployments and branches are running in OpenShift and we can validate the correct git hash versions were built and deployed.
 
