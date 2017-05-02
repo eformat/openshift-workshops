@@ -1,13 +1,13 @@
 name: Container Camp AU 2017
 logo: cc-au-hero-426a54ac.svg
 vars:
-  DOWNLOAD_CLIENT_WINDOWS: "https://drive.google.com/open?id=0BzSBX7yS9LvadXdjdk0wczNRNE0"
-  DOWNLOAD_CLIENT_MAC: "https://drive.google.com/open?id=0BzSBX7yS9LvaLVFqUDhDRFp2WDg"
+  DOWNLOAD_CLIENT_WINDOWS: "https://drive.google.com/open?id=0BzSBX7yS9LvaWjkzVC1ZMHVNOUU"
+  DOWNLOAD_CLIENT_MAC: "https://drive.google.com/open?id=0BzSBX7yS9LvaTzI2SHVZdTV6cEk"
   DOWNLOAD_CLIENT_LIN32: ""
-  DOWNLOAD_CLIENT_LIN64: "https://drive.google.com/open?id=0BzSBX7yS9LvadXpnWDE0X1AybkE"
-  CONSOLE_ADDRESS: abc-demo-ocp.anzlab.bne.redhat.com:8443
-  ROUTER_ADDRESS: "192.168.137.2.xip.io"
-  REGISTRY_ADDRRESS: "172.30.1.1:5000"
+  DOWNLOAD_CLIENT_LIN64: "https://drive.google.com/open?id=0BzSBX7yS9LvaS2M0dVcyMlFsX00"
+  CONSOLE_ADDRESS: master.openshift.redhat.sydney
+  ROUTER_ADDRESS: apps.openshift.redhat.sydney
+  REGISTRY_ADDRRESS: "172.30.233.101:5000"
   USER_NAME: "${USER_NAME}"
   USER_PASSWORD: "${USER_PASSWORD}"
 modules:
