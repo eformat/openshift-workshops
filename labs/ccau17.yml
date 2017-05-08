@@ -7,7 +7,7 @@ vars:
   DOWNLOAD_CLIENT_LIN64: "https://drive.google.com/open?id=0BzSBX7yS9LvaS2M0dVcyMlFsX00"
   CONSOLE_ADDRESS: master.openshift.redhat.sydney
   ROUTER_ADDRESS: apps.openshift.redhat.sydney
-  REGISTRY_ADDRRESS: "172.30.233.101:5000"
+  REGISTRY_ADDRRESS: "172.30.47.62:5000"
   USER_NAME: "${USER_NAME}"
   USER_PASSWORD: "${USER_PASSWORD}"
 modules:
