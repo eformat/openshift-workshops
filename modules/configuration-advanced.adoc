@@ -115,7 +115,7 @@ We have also loaded the Hawkular APM server template and loaded it into OpenShif
 
 [source]
 ---- 
-oc create -f https://raw.githubusercontent.com/eformat/hawkular-apm-template/master/templates/hawkular-apm-server.yml
+oc create -f https://raw.githubusercontent.com/eformat/hawkular-apm-template/master/templates/hawkular-apm-server.yml -n openshift
 ----
 
 #####  Prometheus and Grafana
