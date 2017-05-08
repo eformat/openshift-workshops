@@ -56,7 +56,9 @@ following confirmation message:
 ----
 Login successful.
 
-Using project "{{EXPLORE_PROJECT_NAME}}{{USER_SUFFIX}}".
+You don't have any projects. You can try to create a new project, by running
+
+    oc new-project <projectname>
 ----
 
 Congratulations, you are now authenticated to the OpenShift server. The
