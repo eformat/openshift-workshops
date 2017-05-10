@@ -265,7 +265,7 @@ liveness check for our container that performs a simple shell command (echo), an
 [source]
 ----
 oc set probe dc/camel-springboot-rest --liveness -- echo ok
-oc set probe dc/camel-springboot-rest --readiness --get-url=//:8080/health --initial-delay-seconds=30 --timeout-seconds=2
+oc set probe dc/camel-springboot-rest --readiness --get-url=//:8080/health --initial-delay-seconds=15 --timeout-seconds=2
 ----
 
 image::/images/28-spring-health-check.png[Spring Health Check,600,align="center"]
