@@ -135,7 +135,7 @@ oc create -f https://raw.githubusercontent.com/fabric8io/templates/master/defaul
 * https://fabric8.io/guide/metrics.html
 
 ++++ 
-</div></section></div>
+</div></section>
 ++++
 
 ### Now you get your hands dirty, build and deploy the application

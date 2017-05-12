@@ -67,7 +67,7 @@ can be found here - https://github.com/openshift/origin/tree/master/examples/jen
 for the jenkins kubernetes plugin.
 
 ++++ 
-</div></section></div>
+</div></section>
 ++++
 
 ### A Simple Pipeline
