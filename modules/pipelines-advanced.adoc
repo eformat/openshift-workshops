@@ -120,7 +120,7 @@ nodejs-mongodb-example-1-tfh02   1/1       Running     0          13s   <3>
 <2> Build Pod
 <3> Running Application
 
-If you browse to the running applicaiton URL, you can see a simple page count that increments on every visit and is stored in the mongodb.
+If you browse to the running application URL, you can see a simple page count that increments on every visit and is stored in the mongodb.
 
 image::/images/15-simple-jenkins-running-application.png[The running application,400,align="center"]
 
@@ -169,7 +169,7 @@ oc new-app "https://github.com/devops-with-openshift/bluegreen#master" --name=bl
 oc new-app "https://github.com/devops-with-openshift/bluegreen#green" --name=green
 ----
 
-We care going to expose services for our endpoints so we can test them independantly, and point the 'bluegreen' route to the blue service.
+We care going to expose services for our endpoints so we can test them independently, and point the 'bluegreen' route to the blue service.
 
 [source]
 ----
@@ -197,7 +197,7 @@ oc patch route/bluegreen -p '{"spec":{"to":{"name":"green"}}}'
 oc patch route/bluegreen -p '{"spec":{"to":{"name":"blue"}}}'
 ----
 
-We have automated this switch into a Jenkisfile pipeliene as code. Start the pipeline build:
+We have automated this switch into a Jenkisfile pipeline as code. Start the pipeline build:
 
 [source]
 ----
@@ -260,7 +260,7 @@ deployment, test whether your hypothesis is true or false and either rollback to
 
 image::/images/15-ab-deployment.png[A/B Deployments,800,align="center"]
 
-Let's create weighted route backends for our application. We need to change the default load balacing behaviour from 'least-connection' to 'round-robin'
+Let's create weighted route backends for our application. We need to change the default load balancing behaviour from 'least-connection' to 'round-robin'
 
 [source]
 ----
@@ -300,7 +300,7 @@ for x in {1..10}; do curl -s http://bluegreen-bluegreen-{{USER_NAME}}.{{ROUTER_A
 10 green
 ----
 
-Beacuase the default configuraiton for HAProxy is to honour sticky sessions using cookies, we can see this in a Broswer or from CLI (always get the same version):
+Because the default configuration for HAProxy is to honour sticky sessions using cookies, we can see this in a Browser or from CLI (always get the same version):
 
 [source]
 ----
@@ -322,9 +322,7 @@ image::/images/15-ab-weights.png[Route weighting,1000,align="center"]
 
 ### Multi Project Pipeline
 
-Ideally we want to build our immutable application images once then tag the images for promotion into other projects - to perform our pipeline activities such as testing
-and eventually production deployment. The feedback from our various activities forms the gates for downstream activities. The basics of build, tag and promote forms
-the foundation for every container based application to flow through our delivery lifecycle.
+Ideally we want to build our immutable application images once then tag the images for promotion into other projects - to perform our pipeline activities such as testing and eventually production deployment. The feedback from our various activities forms the gates for downstream activities. The basics of build, tag and promote forms the foundation for every container based application to flow through our delivery lifecycle.
 
 image::/images/15-multi-project-pipeline.png[Multi project pipeline,800,align="center"]
 

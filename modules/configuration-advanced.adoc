@@ -1,4 +1,4 @@
-## Lab: Zero Downtime Deployment; Externalizing Application Configuration; Hot Reconfiguration; Application Performance Managment
+## Lab: Zero Downtime Deployment; Externalizing Application Configuration; Hot Reconfiguration; Application Performance Management
 
 ### Background: 
 Once you build your applications, you can guarantee that you will need to change them !
@@ -10,7 +10,7 @@ Most applications require configuration using environment variables, configurati
 should be externalized form the application and the immutable image content in order to keep the image portable across our environments.
 
 In this lab we are going to learn about using Openshift to deploy a REST web service and demonstrate various configuration aspects to achieve ZDD.
-We'll also demonstrate hot reconfiguration capabilites and application performance managment using popular frameworks (Hawkular, Prometheus, Grafana, Jolokia and Hawt.io) 
+We'll also demonstrate hot reconfiguration capabilities and application performance management using popular frameworks (Hawkular, Prometheus, Grafana, Jolokia and Hawt.io)
 along the way.
 
 The application stack consists of tools from open source projects including:
@@ -120,8 +120,7 @@ oc create -f https://raw.githubusercontent.com/eformat/hawkular-apm-template/mas
 
 #####  Prometheus and Grafana
 
-We are also going to deploy a local prometheus and grafana instance for application monitoring as well, so we have created an application template using
- the fabric8 project templaet and loaded it into Openshift:
+We are also going to deploy a local prometheus and grafana instance for application monitoring as well, so we have created an application template using the fabric8 project template and loaded it into Openshift:
 
 [source]
 ---- 
@@ -200,8 +199,7 @@ cd camel-springboot-rest-ose
 mvn spring-boot:run
 ----
 
-Once the image has been built and deployed to the registry, a single pod should be running. We can see a warning about Health Checks which we are going
-to deal with in a minute.
+Once the image has been built and deployed to the registry, a single pod should be running. We can see a warning about Health Checks which we are going to deal with in a minute.
 
 image::/images/28-springboot-apm-pod.png[SpringBoot APM Pod,700,align="center"]
 
@@ -211,8 +209,7 @@ image::/images/28-springboot-apm-pod.png[SpringBoot APM Pod,700,align="center"]
 
 If we browse to our application, we should see that a Swagger-UI - http://swagger.io/ has been deployed to the root of our application.
 
-There is an bug with our generated swagger documentation - it does not know what our exposed route URL is. As a workaround we set an environment
- variable to point to our exposed application for the swagger documentation:
+There is an bug with our generated swagger documentation - it does not know what our exposed route URL is. As a workaround we set an environment variable to point to our exposed application for the swagger documentation:
 
 ++++
 <pre class="highlight">
@@ -251,16 +248,13 @@ Lets change the Greeting message using an environment variable:
 oc env dc/camel-springboot-rest GREETING="Environment Variable Hi "
 ----
 
-By changing the deployment configuration, we will trigger a new deployment. If we browse to our application you might see an HTTP 503, this
-is because the jvm and our application is in the process of restarting:
+By changing the deployment configuration, we will trigger a new deployment. If we browse to our application you might see an HTTP 503, this is because the jvm and our application is in the process of restarting:
 
 image::/images/28-spring-503.png[HTTP 503 Unavailable,400,align="center"]
 
-The default deployment strategy in OpenShift is the `Rolling` strategy. The rolling strategy performs a rolling update of our application. OpenShift offers *health checks*
- when deploying our applicaiton that tell us when the applicaiton is alive - *liveness* and ready to accept user requests - *readiness*.
+The default deployment strategy in OpenShift is the `Rolling` strategy. The rolling strategy performs a rolling update of our application. OpenShift offers *health checks* when deploying our application that tell us when the application is alive - *liveness* and ready to accept user requests - *readiness*.
 
-It is crucial for correct deployment behaviour that we set them appropriately for our application. We can do this from the command line or web-ui. Lets define a
-liveness check for our container that performs a simple shell command (echo), and a readiness check on our API using the spring actuator */health* status that is built in:
+It is crucial for correct deployment behaviour that we set them appropriately for our application. We can do this from the command line or web-ui. Lets define a liveness check for our container that performs a simple shell command (echo), and a readiness check on our API using the spring actuator */health* status that is built in:
 
 [source]
 ----
@@ -270,8 +264,7 @@ oc set probe dc/camel-springboot-rest --readiness --get-url=//:8080/health --ini
 
 image::/images/28-spring-health-check.png[Spring Health Check,600,align="center"]
 
-If we watch the deployment in the web-ui - we can see that the old pod is not stopped and removed until the new pod deployment has successfully passed
- our defined liveness and readiness health check probes.
+If we watch the deployment in the web-ui - we can see that the old pod is not stopped and removed until the new pod deployment has successfully passed our defined liveness and readiness health check probes.
 
 image::/images/28-rolling-deployment.png[Rolling Deployment Strategy,600,align="center"]
 
@@ -281,7 +274,7 @@ image::/images/28-env-var-service.png[Enviornment Variable Helloservice,800,alig
 
 Yes - it returns the environment variable version of our greeting.
 
-How did we acheive this? by using setting a preference in our Java code to return an environment variable (as exposed in our container runtime) over the property file:
+How did we achieve this? by using setting a preference in our Java code to return an environment variable (as exposed in our container runtime) over the property file:
 
 * https://github.com/eformat/camel-springboot-rest-ose/blob/master/src/main/java/org/example/ApplicationConfigBean.java#L17
 
@@ -289,9 +282,7 @@ image::/images/28-env-var-code.png[Enviornment Variable Code,600,align="center"]
 
 ##### Config Maps, Hot Reload
 
-The `ConfigMap` object in OpenShift provides mechanisms to provide configuration data to the application container while keeping the application images both
-portable across environments and independent of OpenShift Container Platform. A `ConfigMap` can be used to store key-value properties, configuration files, JSON
-blobs and alike.
+The `ConfigMap` object in OpenShift provides mechanisms to provide configuration data to the application container while keeping the application images both portable across environments and independent of OpenShift Container Platform. A `ConfigMap` can be used to store key-value properties, configuration files, JSON blobs and alike.
 
 Lets remove our GREETING environment variable we set previously:
 
@@ -386,7 +377,7 @@ Lets set these on the deployment config
 
 Once re-deployed, we can test our application using the swagger-ui again and we should start seeing traffic in the Hawkular APM console
 
-We can filter by time spanand text, and look the time taken for each call and drilldown into distributed tracing and latency for each rest call.
+We can filter by time spanned text, and look the time taken for each call and drill-down into distributed tracing and latency for each rest call.
 
 image::/images/28-hawkular-apm-component.png[APM Component View,1000,align="center"]
 
@@ -400,11 +391,11 @@ The base Java image also support the hawt.io console (exposes JMX over REST). Yo
 
 image::/images/28-open-java-console.png[Open Java Console,600,align="center"]
 
-to see your Camel Routes in real-time, drilldown into the source code, debug and trace in realtime your camel application
+to see your Camel Routes in real-time, drill-down into the source code, debug and trace in real-time your camel application
 
 image::/images/28-hawtio-camel-route.png[Hawt.io Camel Routes,1000,align="center"]
 
-as well as see summary aatributes
+as well as see summary attributes
 
 image::/images/28-camel-messages.png[Camel Route Attributes,1000,align="center"]
 
@@ -493,5 +484,5 @@ Congratulations ! You have successfully:
 - created and deployed a springboot microservice
 - configured liveness and readiness probes that allow rolling deployment of the service
 - used configuration maps, environment variables and properties files to configure your application
-- hot reloaded the springboot jvm when the configuraiton changes
+- hot reloaded the springboot jvm when the configuration changes
 - monitored, traced and graphed your application performance
