@@ -10,8 +10,8 @@ want to authenticate to.  For simplicity, export your username and pasword (so y
 
 [source]
 ----
-export USER_NAME=user01
-export USER_PASSWORD=user01
+export USER_NAME=user001
+export USER_PASSWORD=user001
 ----
 
 Issue the following command:
