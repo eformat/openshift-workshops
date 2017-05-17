@@ -416,9 +416,9 @@ oc project helloservice-{{USER_NAME}}
 oc create serviceaccount metrics
 ----
 
-A cluster admin will need to allow your project's metric user to query kubernetes:
+A cluster admin will need to allow your project's metric user to query kubernetes (this has been done for you, so `don't run this next command`)
 
-[source]
+[source,role=copypaste]
 ----
 oc login -u admin
 oc adm policy add-cluster-role-to-user cluster-reader system:serviceaccount:helloservice-{{USER_NAME}}:metrics
