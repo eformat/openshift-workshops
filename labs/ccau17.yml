@@ -13,6 +13,7 @@ vars:
   OC_VERSION: "oc v3.5.5.8"
   EXPLORE_PROJECT_NAME: "explore"
   METRICS_ENABLED: "true"
+  DOCS_URL: "docs.openshift.com/container-platform"
 modules:
   activate:
     - install

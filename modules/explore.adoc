@@ -83,7 +83,7 @@ understand all of the terminology as we will cover it in detail in later labs.
 The first thing we want to do is create a sample project *{{EXPLORE_PROJECT_NAME}}-{{USER_NAME}}* project. You
 can do this with the following command:
 
-[source,role=copypaste]
+[source]
 ----
 oc new-project {{EXPLORE_PROJECT_NAME}}-{{USER_NAME}}
 ----
@@ -97,7 +97,7 @@ Now using project "{{EXPLORE_PROJECT_NAME}}-{{USER_NAME}}" on server "https://{{
 
 You can switch to this project from the CLI at anytime using:
 
-[source,role=copypaste]
+[source]
 ----
 oc project {{EXPLORE_PROJECT_NAME}}-{{USER_NAME}}
 ----
