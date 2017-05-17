@@ -87,6 +87,10 @@ We can then create our sample application from template:
 oc new-app jenkins-pipeline-example 
 ----
 
+We could also have used the webui to create the application from this template using the "Add to Project" button:
+
+image::/images/15-jenkins-pipeline-template.png[Pipeline Template,800,align="center"]
+
 A mongodb and jenkins pod should be provisioned into your project. We can browse to the "Build", "Pipeline", "Configuration" and see the 
 groovy DSL Jenkinsfile for this pipeline.
 
@@ -126,12 +130,21 @@ image::/images/15-simple-jenkins-running-application.png[The running application
 
 *(Optional) Accessing the Database*
 
-We can connect to the mongodb to look at the generated data. Use the generated admin password (its an environment variable) for the mongodb in your project:
+We can connect to the mongodb to look at the generated data. First we need to get the database credentials that was generated (its an environment variable) - you can find the password using the CLI or browsing to the "Pods" -> "Environment" in the UI:
+
+[source]
+----
+oc env dc mongodb --list | grep MONGODB_ADMIN_PASSWORD
+
+MONGODB_ADMIN_PASSWORD=H0XosoaAxsOhpbJq
+----
+
+Use this password to connect to mongodb from the command line:
 
 [source]
 ----
 oc rsh $(oc get pods -l name=mongodb -o name)
-mongo -u admin -p <pwd> --authenticationDatabase admin
+mongo -u admin -p <admin password> --authenticationDatabase admin
 > show databases
 > use sampledb
 > show collections
@@ -222,7 +235,7 @@ Once completed the 'bluegreen' route will show 'green' instead of 'blue'. You ca
 
 *(Optional) Configure a Webhook to call the pipeline*
 
-Fork the github project using your user credentials:
+Fork the github project using *your GitHub account*:
 
 [source]
 ----
@@ -231,7 +244,9 @@ https://github.com/devops-with-openshift/bluegreen
 
 In Github browse to Project -> Settings -> WebHooks -> Add WebHook
 
-Enter the webhook copied from OpenShift -> Project -> Builds -> Pieplines -> blugreen-pipeline -> Configuration -> GitHub WebHook URL which looks like:
+Don't enable SSL verification in github (we are using self signed certificates) else you will get a "Peer certificate" authentication error.
+
+Enter the webhook copied from OpenShift -> Project -> Builds -> Pipelines -> blugreen-pipeline -> Configuration -> GitHub WebHook URL which looks like:
 
 [source]
 ----
@@ -395,7 +410,7 @@ oc expose service myapp --hostname=cotd-development-{{USER_NAME}}.{{ROUTER_ADDRE
 </pre>
 ++++
 
-Lets setup our testing project, using the image from development and changing the image pull policy to always.
+Let's setup our testing project, using the image from development and changing the image pull policy to always.
 
 [source]
 ----
@@ -445,16 +460,32 @@ image::/images/15-running-application.png[Running Application,800,align="center"
 ### Versions and Pull Requests
 
 ##### Prerequisites
-* You will need a valid github user account - https://github.com/
-* You need `git` installed locally
+* You will need a valid `github user account` - https://github.com/join
+* You need `git` installed locally - https://help.github.com/articles/set-up-git/
+
+you can verify the giot CLI once installed by typing:
+
+[source]
+----
+$ git --version
+
+git version 2.9.3
+----
 
 A common developer task is to merge pull requests from other branches. The pipeline plugins in Jenkins support multi-branch merging of pull requests.
 
-The OpenShift pipeline plugin and UI is not so advanced in its integration yet, although we can leverage OpenShift to build and merge PR's. 
+The OpenShift pipeline plugin and UI is not so advanced in its integration yet, although we can leverage OpenShift to build and merge `Pull Requests` (PR's)
+
+Pull Requests let you tell others about changes you've pushed to a repository on GitHub. Once a pull request is opened, you can discuss and review the potential changes with collaborators and add follow-up commits before the changes are merged into the repository.
+
+If you are unfamiliar with `Pull Requests` (PR's) read here - https://help.github.com/articles/about-pull-requests/
+
+image::/images/15-standard-merge-commit-diagram.png[Standard Merge,600,align="center"]
+
 
 Let's try it out.
 
-Create a fork of this repository:
+Create a fork of this repository using your github account
 
 [source]
 ----
@@ -477,10 +508,15 @@ Select the *New Pipeline* button and select *Github*.
 
 image::/images/15-blue-ocean-create-pipeline.png[Create Pipeline,600,align="center"]
 
-You need to create a github access token - *Create an access key here* and use that for accessing your source code
-and repositories.
+You need to create a github access token - click the link *Create an access key here* in the blueocean webpage and use that for accessing your source code and repositories.
+
+You can also browse to your github profile and create the access token - https://github.com/settings/profile and click "Personal Access Tokens" or browse to - https://github.com/settings/tokens
+
+Click "Generate New Token" button, and check the *repo* and *user* sections
 
 image::/images/15-blue-ocean-github-auth.png[Create access key,600,align="center"]
+
+Enter your token into the blueocean webpage.
 
 Select your organisation and then select *New Pipeline* from a single repository - use the `node-hello-world-swagger` repo you forked earlier. Select *Create Pipeline*
 
@@ -500,16 +536,25 @@ From the running pod:
 
 image::/images/15-blue-ocean-pipeline-run-pod.png[Running pod,600,align="center"]
 
-Before we go further, we need to change our pipeline configuration to automatically build PR's - it is not set as the default. Go to the classic jenkins view
-and from the top level, select the github organization entry (in the *All* tab) with *your github user name* -> *Configure*. And under the *Projects -> Advanced button* -> Check the `Build origin PRs (merged with base branch)` checkbox and select *Save*.
+Before we go further, we need to change our pipeline configuration to automatically build PR's - it is not set as the default.
 
-image::/images/15-blue-ocean-pipeline-config.png[Build PR Config,600,align="center"]
+Go to the classic jenkins view and from the top level, select the github organization entry (in the *All* tab) with *your github user name*, in this screenshot example "Stefano Picozzi"
 
-Let's create a git branch for making a change on. Clone you git repo, and create a branch called *feature1*
+image::/images/15-classic-view-github-user.png[Classic View,600,align="center"]
+
+Select *Configure* and under the *Projects -> Advanced button*
+
+image::/images/15-classic-view-advanced.png[Classic View Advanced,800,align="center"]
+
+Check the `Build origin PRs (merged with base branch)` checkbox and select *Save*.
+
+image::/images/15-blue-ocean-pipeline-config.png[Build PR Config,800,align="center"]
+
+Let's create a git branch for making a change on. Clone `your` git repo, and create a branch called *feature1* from the command line
 
 [source]
 ----
-git clone https://github.com/<username>/node-hello-world-swagger.git
+git clone https://github.com/<Your GitHib UserName>/node-hello-world-swagger.git
 cd node-hello-world-swagger
 git branch feature1
 git checkout feature1
@@ -525,7 +570,7 @@ git commit -m "changed changelog"
 git push --set-upstream origin feature1
 ----
 
-We are now ready to create the pull request in github. Browse to you repository, goto the *Pull requests* tab, and *Create a pull request* between master and feature1 branches:
+We are now ready to create the pull request in github. Browse to you repository, goto the *Pull requests* tab, and *Create a pull request* between master and feature1 branches - make sure you compare the feature1 branch by clicking `compare: feature1`
 
 image::/images/15-github-create-pull-request.png[Build PR Config,600,align="center"]
 

@@ -10,6 +10,9 @@ vars:
   REGISTRY_ADDRRESS: "172.30.47.62:5000"
   USER_NAME: "${USER_NAME}"
   USER_PASSWORD: "${USER_PASSWORD}"
+  OC_VERSION: "oc v3.5.5.8"
+  EXPLORE_PROJECT_NAME: "explore"
+  METRICS_ENABLED: "true"
 modules:
   activate:
     - install
