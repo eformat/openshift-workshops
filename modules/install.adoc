@@ -106,9 +106,18 @@ Windows 10 - Follow the directions above.
 
 **OS X:**
 
+earlier OS X versions
+
 [source]
 ----
 $ export PATH=$PATH:~/OpenShift
+----
+
+or (on Mac OS X - Sierra)
+
+[source]
+----
+set PATH $PATH ~/OpenShift
 ----
 
 **Linux:**
