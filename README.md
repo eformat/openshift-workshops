@@ -205,3 +205,13 @@ and you will receive JSON with your modules
  ```
 
  to get the HTML of the `Installing the *oc* client tool` module.
+ 
+## Running the lab content on OpenShift
+
+To run the lab content on OpenShift:
+
+```
+oc new-project ccau17 --description="Lab ccau17" --display-name="Lab ccau17"
+oc new-app https://github.com/eformat/openshift-workshops.git -e DEFAULT_LAB=ccau17
+oc expose svc openshift-workshops
+```
