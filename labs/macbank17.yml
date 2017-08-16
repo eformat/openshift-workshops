@@ -1,16 +1,16 @@
 name: Macquarie Bank Technical Event Series 2017
 logo: Macquarie_Group_logo.jpg
 vars:
-  DOWNLOAD_CLIENT_WINDOWS: "https://drive.google.com/open?id=0BzSBX7yS9LvaLV9KVkEwRFRCbnc"
-  DOWNLOAD_CLIENT_MAC: "https://drive.google.com/open?id=0BzSBX7yS9LvaYk05RWROOVd5OHc"
+  DOWNLOAD_CLIENT_WINDOWS: "https://drive.google.com/open?id=0BzSBX7yS9LvaOS1UQ2RTeGNOU00"
+  DOWNLOAD_CLIENT_MAC: "https://drive.google.com/open?id=0BzSBX7yS9LvaSlpJWEVkUlc2UEU"
   DOWNLOAD_CLIENT_LIN32: ""
-  DOWNLOAD_CLIENT_LIN64: "https://drive.google.com/open?id=0BzSBX7yS9LvaTjFLbEg2R3J5RFU"
-  CONSOLE_ADDRESS: master.openshift.redhat.sydney
-  ROUTER_ADDRESS: apps.openshift.redhat.sydney
+  DOWNLOAD_CLIENT_LIN64: "https://drive.google.com/open?id=0BzSBX7yS9LvacklYb1owMWcxUXM"
+  CONSOLE_ADDRESS: ocpdemo.australiasoutheast.cloudapp.azure.com:8443
+  ROUTER_ADDRESS: apps13.70.146.253.nip.io
   REGISTRY_ADDRRESS: "172.30.28.199:5000"
   USER_NAME: "${USER_NAME}"
   USER_PASSWORD: "${USER_PASSWORD}"
-  OC_VERSION: "oc v3.5.5.8"
+  OC_VERSION: "oc v3.6.0+c4dd4cf"
   EXPLORE_PROJECT_NAME: "explore"
   METRICS_ENABLED: "true"
   DOCS_URL: "docs.openshift.com/container-platform"
