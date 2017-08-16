@@ -9,3 +9,4 @@ deployments
 .project
 .ruby-version
 *.prefs
+*.lock
