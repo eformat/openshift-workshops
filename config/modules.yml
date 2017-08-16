@@ -91,3 +91,9 @@ pipelines-advanced:
 #    - application-health
 configuration-advanced:
   name: Application Configuration; Zero Downtime Deployments
+pipelines-advanced-mb:
+  name: Deployment with CI/CD Pipelines
+  requires:
+#    - application-health
+configuration-advanced-mb:
+  name: Application Configuration; Zero Downtime Deployments

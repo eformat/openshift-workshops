@@ -1,0 +1,357 @@
+## Lab: Zero Downtime Deployment; Externalizing Application Configuration; Hot Reconfiguration; Application Performance Management
+
+### Background: 
+Once you build your applications, you can guarantee that you will need to change them !
+
+We want to ensure that frequent deployments do not impact the availability of our services. And this is where the Zero Downtime Deployment
+(ZDD) comes in. This allows you to deploy a new version of your service without interrupting the operation of the service.
+
+Most applications require configuration using environment variables, configuration files and command line arguments. These configuration artifacts
+should be externalized form the application and the immutable image content in order to keep the image portable across our environments.
+
+In this lab we are going to learn about using Openshift to deploy a REST web service and demonstrate various configuration aspects to achieve ZDD.
+
+We are also going to use Hystrix - a latency and fault tolerance library designed to isolate points of access to remote systems, services, stop cascading failure and enable resilience in complex distributed systems where failure is inevitable.
+
+The application stack consists of tools from open source projects including:
+
+- Java - http://openjdk.java.net/
+- Camel - http://camel.apache.org/
+- SpringBoot - https://projects.spring.io/spring-boot/
+- Fabric8 - https://fabric8.io/
+- Hystrix - https://github.com/Netflix/Hystrix/wiki/How-it-Works
+
+++++ 
+<input id="toggle" type="checkbox" unchecked>
+<label for="toggle">Lab Setup</label>
+<div class="sect2" id="expand"><section>
+++++
+
+`DO NOT DO THIS - The pre-reqs have already been done for this lab environment` 
+
+Let's run through the setup so you can repeat in other environments...
+
+##### Nexus
+
+We are going to be building and deploying a Java application. We have deployed a nexus container with a persistent volume claim to cache the
+ maven dependencies required to build the example application. This speeds up our builds as well as saving bandwidth.
+
+[source]
+---- 
+oc new-project nexus --display-name="Nexus" --description="Nexus"
+oc project nexus
+oc new-app -f https://raw.githubusercontent.com/eformat/openshift-nexus/master/nexus.yaml
+----
+
+Once the nexus pod has deployed we install the following maven proxy repositories as the *admin/admin123* user:
+
+[options="header"]
+|=======
+| Repo Name | URL | Type
+| jboss-ga | http://maven.repository.redhat.com/techpreview/all | Release
+| fusesource.m2 | https://repo.fusesource.com/nexus/content/groups/public | Release
+| repository.jboss.org | http://repository.jboss.org/nexus/content/groups/public | Mixed
+| fusesource.ea | https://repo.fusesource.com/nexus/content/groups/ea | Release
+| redhat.ga | https://maven.repository.redhat.com/ga | Release
+|=======
+
+image::/images/28-nexus-repos.png[Nexus Repository Manager,800,align="center"]
+
+##### Hystrix background
+
+Hystrix uses two arhitectural patterns to assist with designing fault tolerant applications:
+
+* _circuit breaker pattern_ - used to detect failures and encapsulates the logic of preventing a failure
+* _bulkhead pattern_ - implemented using thread and semaphore isolation
+
+The following diagram depicts the state diagram of the circuit breaker:
+
+image::/images/circuit-breaker-states.png[Hystrix Circuit Breaker,700,align="center"]
+
+It is based on electrical circuits - so when operating correctly the circuit is closed (green). When a failure occurs, the breaker trips (red) and a fast failover occurs. In our example we fail from *service1* to *service2*. The circuit breaker retries periodically to connect to the original service (yellow) which is called half-open and if successful resets the circuit breaker.
+
+The Hystrix dashboard shows a graphical representation of the traffic flows (note the numbers are a 10 second rolling count).
+
+image::/images/dashboard-annoted-circuit-640-hystrix.png[Hystrix Dashboard,700,align="center"]
+
+We also use a component called the turbine server to help aggregate the Hytrix stream data.
+
+++++
+</div></section>
+++++
+
+### Now you get your hands dirty.
+
+We are going to build and deploy two application services and once client application.
+
+Login and create a project for our applications:
+
+[source]
+---- 
+oc login -u {{USER_NAME}} -p {{USER_PASSWORD}}
+oc new-project hystrixdemo-{{USER_NAME}} --display-name="Hystrix Demo" --description="Hystrix Demo"
+----
+
+We are going to allow our default service account to *view* the kubernetes api (this is for our spring hot reload function later on)
+
+[source]
+---- 
+oc policy add-role-to-user view --serviceaccount=default -n $(oc project -q)
+----
+
+Lets use S2I to build and deploy our three applications. We use pull java dependencies from our local Nexus instance.
+
+Build and deploy *service1*
+
+[source]
+----
+oc process -f https://raw.githubusercontent.com/eformat/camel-example-hystrix/master/service1/service1-template.yaml | oc create -f-
+----
+
+Build and deploy *service2*
+
+[source]
+----
+oc process -f https://raw.githubusercontent.com/eformat/camel-example-hystrix/master/service2/service2-template.yaml | oc create -f-
+----
+
+Build and deploy *client*
+
+[source]
+----
+oc process -f https://raw.githubusercontent.com/eformat/camel-example-hystrix/master/client/client-template.yaml | oc create -f-
+----
+
+Builds should start and the java dependencies will be pulled from the Nexus server. It should take a couple of minutes for the builds to complete.
+
+Once the image has been built and deployed to the registry, three pods should be running.
+
+image::/images/hystrix-apps-running-pods.png[SpringBoot APM Pod,1000,align="center"]
+
+We can test *service1* from the CLI or from the browser
+
+++++
+<pre class="highlight">
+<code>curl $(oc get routes/camel-example-hystrix-service1 --template='&#123;{ .spec.host }}')/service1
+Default Property Hello - Service1  - from pod: camel-example-hystrix-service1-1-l51s1</code>
+</pre>
+++++
+
+Similarly for *service2*
+
+++++
+<pre class="highlight">
+<code>curl $(oc get routes/camel-example-hystrix-service2 --template='&#123;{ .spec.host }}')/service2
+Service2-</code>
+</pre>
+++++
+
+We can see the client at work by looking at the pod logs, and if all goes well it will be calling *service1* once every second:
+
+[source]
+----
+oc logs $(oc get pods -l app=camel-example-hystrix-client -o name)
+
+...
+2017-08-15 08:53:25.885  INFO 1 --- [timer://trigger] route1 :  Client request: 41
+2017-08-15 08:53:25.897  INFO 1 --- [timer://trigger] route1 : Client response: Default Property Hello - Service1 41 - from pod: camel-example-hystrix-service1-1-80zj6
+----
+
+### Configuring application behaviour
+
+##### Application properties files
+
+*Service1* gives us a _default_ response set in the _application.properties_ file:
+
+The `Default Prop Hi` greeting is set in the spring application properties file
+
+* https://github.com/eformat/camel-example-hystrix/blob/master/service1/src/main/resources/application.properties#L48
+
+image::/images/28-spring-properties.png[Spring Properties File,600,align="center"]
+
+This is bound into the application using the spring @ConfigurationProperties annotation
+
+* https://github.com/eformat/camel-example-hystrix/blob/master/service1/src/main/java/sample/camel/Service1ConfigBean.java#L7
+
+image::/images/28-spring-properties-annotation.png[Spring Configuration,600,align="center"]
+
+##### Environment variables, Deployment strategies
+
+Lets change the Greeting message using an environment variable:
+
+[source]
+----
+oc env dc/camel-example-hystrix-service1 GREETING="Environment Variable Hi "
+----
+
+By changing the deployment configuration, we will trigger a new deployment. If we browse to our *service1* application you might see an HTTP 503, this is because the jvm and our application is in the process of restarting:
+
+image::/images/28-spring-503.png[HTTP 503 Unavailable,400,align="center"]
+
+The default deployment strategy in OpenShift is the `Rolling` strategy. The rolling strategy performs a rolling update of our application. OpenShift offers *health checks* when deploying our application that tell us when the application is alive - *liveness* and ready to accept user requests - *readiness*.
+
+It is crucial for correct deployment behaviour that we set them appropriately for our application. We can do this from the command line or web-ui. Lets define a liveness check for our container that performs a simple shell command (echo), and a readiness check on our API using the spring actuator */health* status that is built in:
+
+[source]
+----
+oc set probe dc/camel-example-hystrix-service1 --liveness -- echo ok
+oc set probe dc/camel-example-hystrix-service1 --readiness --open-tcp=8080 --initial-delay-seconds=5 --timeout-seconds=2
+----
+
+If we watch the deployment in the web-ui - we can see that the old pod is not stopped and removed until the new pod deployment has successfully passed our defined liveness and readiness health check probes.
+
+image::/images/28-rolling-deployment.png[Rolling Deployment Strategy,900,align="center"]
+
+Now, once deployment has finished, lets try testing our environment variable configured service in swagger
+
+image::/images/28-env-var-service.png[Enviornment Variable Helloservice,800,align="center"]
+
+Yes - it returns the environment variable version of our greeting.
+
+How did we achieve this? by using setting a preference in our Java code to return an environment variable (as exposed in our container runtime) over the property file:
+
+* https://github.com/eformat/camel-example-hystrix/blob/master/service1/src/main/java/sample/camel/Service1ConfigBean.java#L17
+
+image::/images/28-env-var-code.png[Enviornment Variable Code,600,align="center"]
+
+##### Config Maps, Hot Reload
+
+The `ConfigMap` object in OpenShift provides mechanisms to provide configuration data to the application container while keeping the application images both portable across environments and independent of OpenShift Container Platform. A `ConfigMap` can be used to store key-value properties, configuration files, JSON blobs and alike.
+
+Lets remove our GREETING environment variable we set previously:
+
+[source]
+----
+oc env dc/camel-example-hystrix-service1 GREETING-
+----
+
+And use a ConfigMap to configure our application instead (if you are not using bash shell, it may be easier to copy the yaml into a file instead to create the ConfigMap)
+
+[source]
+----
+oc apply -f - <<EOF
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: service1
+data:
+  application.yaml: |-
+    service1:
+      greeting: ConfigMap Hello 
+EOF
+----
+
+Now when we test our API, we should see this greeting
+
+image::/images/28-config-map-service.png[ConfigMap Helloservice,600,align="center"]
+
+Our config map greeting has been loaded into out application. If we examine the logs, we can see that a pod/container restart `did not` occur?
+
+Looking at the application logs, we can see what has happened:
+
+image::/images/28-config-map-hotreload.png[Spring Cloud Kubernetes,1200,align="center"]
+
+The application has reloaded the Spring Context (without restarting the JVM) when we changed the ConfigMap
+
+We are making use of `Spring Cloud Kubernetes` - https://github.com/fabric8io/spring-cloud-kubernetes to discover when changes occur to our project
+
+image::/images/28-spring-cloud-kubernetes.png[Spring Cloud Kubernetes,1200,align="center"]
+
+We can `Hot Reload` the config map
+
+[source]
+----
+oc apply -f - <<EOF
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: service1
+data:
+  application.yaml: |-
+    service1:
+      greeting: hot hot hot  
+EOF
+----
+
+image::/images/28-hot-reload.png[Hot Reload,600,align="center"]
+
+### Hystrix
+
+Lets deploy the Hystrix and Turbine servers to our project using a template
+
+[source]
+----
+oc process -f https://raw.githubusercontent.com/eformat/camel-example-hystrix/master/kubeflix/kubeflix.json | oc create -f-
+----
+
+Once deployed, you can browse to the Hystrix Dashboard and select *monitor stream*.
+
+image::/images/hystrix-start.png[Hot Reload,600,align="center"]
+
+You should be able to see our client application:
+
+image::/images/hystrix-stream.png[Hot Reload,600,align="center"]
+
+The magic here is labelling our client service with *hystrix.enabled=true* (which is done in the template).
+
+image::/images/hystrix-label.png[Hot Reload,1200,align="center"]
+
+You could also use the _oc label_ command if you needed to apply it manually to a service.
+
+The turbine server looks for any services with this annotation and loads its data from the */hystrix.stream* endpoint on the client. This is generated by the camel library component:
+
+* https://github.com/eformat/camel-example-hystrix/blob/master/client/src/main/java/sample/camel/ClientRoute.java#L15
+
+image::/images/hystrix-client.png[Hot Reload,600,align="center"]
+
+##### Testing circuit failure
+
+Lets test it out. Tail the client logs in a console or from the web ui:
+
+[source]
+----
+oc logs $(oc get pods -l app=camel-example-hystrix-client -o name)
+----
+
+Also, have the Hystrix web ui open on a web page.
+
+Now scale down *service1* to zero pods:
+
+image::/images/hystrix-service1-scale-down.png[Scale down,800,align="center"]
+
+Watch the circuit *Open* and the client failover to *service2* without dropping a service increment (110 -> 111). The I/O Exception in the logs is the hystrix circuit trying to connect to *service1*
+
+image::/images/hystrix-circuit-open-logs.png[Circuit Open,1000,align="center"]
+
+The Hystrix dashboard shows we are on service1-fallback (which is service2):
+
+image::/images/hystrix-circuit-dashboard.png[Dashboard,600,align="center"]
+
+If we scale *service1* back up to 1 we should see the circuit close again and the client logs return to printing *service1* output.
+
+image::/images/hystrix-closed.png[Dashboard,800,align="center"]
+
+##### Hawt.io
+
+The base Java image also support the hawt.io console (exposes JMX over REST). You can open the java console
+
+image::/images/28-open-java-console.png[Open Java Console,600,align="center"]
+
+to see your Camel Routes in real-time, drill-down into the source code, debug and trace in real-time your camel application
+
+image::/images/28-hawtio-camel-route.png[Hawt.io Camel Routes,1000,align="center"]
+
+as well as see summary attributes
+
+image::/images/28-camel-messages.png[Camel Route Attributes,1000,align="center"]
+
+
+### Summary
+
+Congratulations ! You have successfully:
+
+- created and deployed three springboot microservices
+- configured liveness and readiness probes that allow rolling deployment of the service
+- used configuration maps, environment variables and properties files to configure your application
+- hot reloaded the springboot jvm when the configuration changes
+- used a circuit breaker to automatically failover when your service has an outage
