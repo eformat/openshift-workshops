@@ -17,6 +17,7 @@ The application stack consists of tools from open source projects including:
 
 - Java - http://openjdk.java.net/
 - Camel - http://camel.apache.org/
+- Camel Hystrix - http://camel.apache.org/hystrix-eip.html
 - SpringBoot - https://projects.spring.io/spring-boot/
 - Fabric8 - https://fabric8.io/
 - Hystrix - https://github.com/Netflix/Hystrix/wiki/How-it-Works
@@ -150,7 +151,7 @@ We can see the client at work by looking at the pod logs, and if all goes well i
 
 [source]
 ----
-oc logs $(oc get pods -l app=camel-example-hystrix-client -o name)
+oc logs $(oc get pods -l app=camel-example-hystrix-client -o name) -f
 
 ...
 2017-08-15 08:53:25.885  INFO 1 --- [timer://trigger] route1 :  Client request: 41
@@ -310,7 +311,7 @@ Lets test it out. Tail the client logs in a console or from the web ui:
 
 [source]
 ----
-oc logs $(oc get pods -l app=camel-example-hystrix-client -o name)
+oc logs $(oc get pods -l app=camel-example-hystrix-client -o name) -f
 ----
 
 Also, have the Hystrix web ui open on a web page.
