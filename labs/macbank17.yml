@@ -5,7 +5,7 @@ vars:
   DOWNLOAD_CLIENT_MAC: "https://drive.google.com/open?id=0BzSBX7yS9LvaSlpJWEVkUlc2UEU"
   DOWNLOAD_CLIENT_LIN32: ""
   DOWNLOAD_CLIENT_LIN64: "https://drive.google.com/open?id=0BzSBX7yS9LvacklYb1owMWcxUXM"
-  CONSOLE_ADDRESS: ocpdemo.australiasoutheast.cloudapp.azure.com:8443
+  CONSOLE_ADDRESS: ocpdemo.australiasoutheast.cloudapp.azure.com
   ROUTER_ADDRESS: apps13.70.146.253.nip.io
   REGISTRY_ADDRRESS: "172.30.28.199:5000"
   USER_NAME: "${USER_NAME}"
