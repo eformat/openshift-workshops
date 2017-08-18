@@ -75,7 +75,9 @@ The Hystrix dashboard shows a graphical representation of the traffic flows (not
 
 image::/images/dashboard-annoted-circuit-640-hystrix.png[Hystrix Dashboard,700,align="center"]
 
-We also use a component called the turbine server to help aggregate the Hytrix stream data.
+We also use a component called the turbine server to help aggregate the Hytrix stream data so we can visualize this in the dashboard.
+
+Hystrix is a client side library, the dashboard components are optional in a production deployment.
 
 ++++
 </div></section>
