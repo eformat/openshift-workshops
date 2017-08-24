@@ -408,9 +408,7 @@ Let's setup our testing project, using the image from development and changing t
 ----
 oc project testing-{{USER_NAME}}
 oc create dc myapp --image={{REGISTRY_ADDRRESS}}/development-{{USER_NAME}}/myapp:promoteQA
-oc rollout cancel dc/myapp
 oc patch dc/myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}'
-oc rollout cancel dc/myapp
 oc expose dc myapp --port=8080
 oc expose service myapp --hostname=cotd-testing-{{USER_NAME}}.{{ROUTER_ADDRESS}} --name=myapp
 ----
@@ -423,9 +421,7 @@ We can do the same setup for the production project using the promotePRD image t
 ----
 oc project production-{{USER_NAME}}
 oc create dc myapp --image={{REGISTRY_ADDRRESS}}/development-{{USER_NAME}}/myapp:promotePRD
-oc rollout cancel dc/myapp
 oc patch dc/myapp -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}'
-oc rollout cancel dc/myapp
 oc expose dc myapp --port=8080
 oc expose service myapp --hostname=cotd-production-{{USER_NAME}}.{{ROUTER_ADDRESS}} --name=myapp
 ----
