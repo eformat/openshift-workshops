@@ -402,14 +402,6 @@ oc new-app openshift/php:7.0~https://github.com/devops-with-openshift/cotd.git#m
 oc expose service myapp --hostname=cotd-development-{{USER_NAME}}.{{ROUTER_ADDRESS}} --name=myapp
 ----
 
-`Be sure to use your own environment registry ip and image stream from this command:`
-
-++++
-<pre class="highlight">
-<code>oc get is -n development-{{USER_NAME}} --template='&#123;{range .items}}&#123;{.status.dockerImageRepository}}&#123;{end}}'</code>
-</pre>
-++++
-
 Let's setup our testing project, using the image from development and changing the image pull policy to always.
 
 [source]

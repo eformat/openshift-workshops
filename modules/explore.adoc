@@ -23,6 +23,7 @@ $ oc login {{CONSOLE_ADDRESS}} -u {{USER_NAME}} -p {{USER_PASSWORD}}
 
 You may see the following output:
 
+
 [source]
 ----
 The server uses a certificate signed by an unknown authority.
@@ -36,7 +37,6 @@ workshop, but we did not provide you with the CA certificate that was generated
 by OpenShift. In a real-world scenario, either OpenShift's certificate would be
 signed by a standard CA (eg: Thawte, Verisign, StartSSL, etc.) or signed by a
 corporate-standard CA that you already have installed on your system.
-
 [NOTE]
 ====
 On some versions of Microsoft Windows, you may get an error that the
