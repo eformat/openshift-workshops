@@ -264,7 +264,7 @@ oc patch bc/green -p '{"spec":{"source":{"git":{"uri":"https://github.com/your g
 </pre>
 ++++
 
-You can now make edits in GitHub and these will trigger a build of your OpenShift pipeline.
+You can now make edits to files in GitHub and these will trigger a build of your OpenShift pipeline.
 
 ### A/B Pipeline
 
@@ -414,6 +414,8 @@ oc expose service myapp --hostname=cotd-testing-{{USER_NAME}}.{{ROUTER_ADDRESS}}
 ----
 
 We are using the arbitrary :promoteQA image tag for the testing deployment (which doesn't yet exist)
+
+We also patch the image pull policy to *Always* pull built images rather than the default, which is *IfNotPresent* on the node.
 
 We can do the same setup for the production project using the promotePRD image tag:
 
