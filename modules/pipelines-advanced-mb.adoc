@@ -443,7 +443,7 @@ Once the image is built and deployed in development, it is tagged 'promoteQA' an
 
 image::/images/15-approve-production.png[Approve to Production,800,align="center"]
 
-You can test the application, and them manually approve the image tagging/promotion to the production project.
+You can test the application, and them manually approve the image tagging/promotion to the production project. Here's Neo - Wayne's cat!
 
 image::/images/15-running-application.png[Running Application,800,align="center"]
 
